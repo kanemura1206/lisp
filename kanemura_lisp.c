@@ -4,56 +4,72 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-char* input_formula();           //数式入力
-void resolve(char* input);       //数式分解
-
+char* input_formula();
+char** resolve(char* input);
+void free_token(char** token);
+void dump_token(char** token);
 
 
 int main(void)
 {
-  char *input;
-  input = input_formula();
-  resolve(input);  
-  return 0;
+	char *input;
+	input = input_formula();
+	char **result;
+	result = resolve(input);
+	dump_token(result);
+	free_token(result);
+	return 0;
 }
 
 
 char* input_formula() //数式入力
 {
-  char *c = readline(">>>");
-  return c;
+	char *c = readline(">>>");
+	return c;
 }
 
-void resolve(char* input) //数式分解
+
+char** resolve(char* input) //数式分解
 {
-  char *str = (char *)calloc(10,sizeof(char));
-  char **token = (char **)calloc(10,sizeof(char*));
+	int len = strlen(input);
+	char **token = (char **)calloc(len,sizeof(char*));
+	int i,j,k;
+	j = 0; k = 0;
+	do{
+		if(input[j] != '(' && input[j] != ')' && input[j] != ' '){
+			char *str = (char *)calloc(len,sizeof(char));
+			if(input[j] != '(' && input[j] != ')' && input[j] != ' '){
+				i = 0;
+				do{
+					str[i] = input[j];
+					i++; j++;
+					if(input[j] == '(' || input[j] == ')' || input[j] == ' '){
+						token[k] = str;
+						k++;
+					}
+				}while(input[j] != '(' && input[j] != ')' && input[j] != ' ');
+			}
+			else
+				j++;
+		}
+		else
+			j++;
+	}while(input[j] != ')');
+	return token;
+}
 
-  int i,j;
-  j = 0;
-  for(i = 0; input[i] != '\0'; i++){
-    if(input[i] == '(' || input[i] == ')' || input[i] == ' '){
-      input[i] = '\0';
-      str = (char *)calloc(10,sizeof(char));  
-      str = input + i + 1;
-      token[j] = str;
-      j++;
-    }
-  }
-  for(i = 0; i < (j-1); i++){
-    printf("%s\n",token[i]);
-  }
-  for(i = 0; i < j; i++){
-    if(token[i] != NULL){
-      printf("token[%d]:%p\n",i,token[i]);
-      free(token[i]);
-      token[i] = NULL;
-    }
-  }
+void dump_token(char** token){
+	int i;
+	for(i = 0; token[i] != NULL; i++){
+		printf("%s\n",token[i]);
+	}
+}
 
-  if(token != NULL){
-    free(token);
-    token = NULL;
-  }				     
-
-}				     
+void free_token(char** token)
+{
+	int i;
+	for(i = 0; token[i-1] != NULL; i++){
+		free(token[i]);
+	}
+	free(token);
+}
