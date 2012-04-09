@@ -21,23 +21,25 @@ char** resolve(char* input)
 	do{
 		if(input[j] != '(' && input[j] != ')' && input[j] != ' '){
 			char *str = (char *)calloc(len,sizeof(char));
-			if(input[j] != '(' && input[j] != ')' && input[j] != ' '){
-				i = 0;
-				do{
-					str[i] = input[j];
-					i++; j++;
-					if(input[j] == '(' || input[j] == ')' || input[j] == ' '){
-						token[k] = str;
-						k++;
-					}
-				}while(input[j] != '(' && input[j] != ')' && input[j] != ' ');
-			}
-			else
-				j++;
+			i = 0;
+			do{
+				str[i] = input[j];
+				i++; j++;
+				if(input[j] == '(' || input[j] == ')' || input[j] == ' '){
+					token[k] = str;
+					k++;
+				}
+			}while(input[j] != '(' && input[j] != ')' && input[j] != ' ');
 		}
-		else
+		else if(input[j] == '(' || input[j] == ')'){
+			char *str = (char *)calloc(len,sizeof(char));
+			str[0] = input[j];
+			token[k] = str;
+			j++; k++;
+		}
+		else if(input[j] == ' ')
 			j++;
-	}while(input[j] != ')');
+	}while(input[j] != '\0');
 	return token;
 }
 
@@ -58,3 +60,7 @@ void free_token(char** token)
 	}
 	free(token);
 }
+
+
+
+
