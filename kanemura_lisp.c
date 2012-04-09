@@ -22,14 +22,14 @@ int main(void)
 }
 
 
-char* input_formula() //数式入力
+char* input_formula()
 {
 	char *c = readline(">>>");
 	return c;
 }
 
 
-char** resolve(char* input) //数式分解
+char** resolve(char* input)
 {
 	int len = strlen(input);
 	char **token = (char **)calloc(len,sizeof(char*));
