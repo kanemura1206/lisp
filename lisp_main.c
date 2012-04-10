@@ -11,6 +11,7 @@ int main(void)
 	input = input_formula();
 	char **result;
 	result = resolve(input);
+	cons_cell(result);
 	dump_token(result);
 	free_token(result);
 	return 0;

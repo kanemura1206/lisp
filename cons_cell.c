@@ -19,25 +19,26 @@ int distinction(char *c);
 int main()
 {
 	char **result = (char **)calloc(100,sizeof(char*));
-	result[0] = "("; result[1] = "+"; result[2] = "(", result[3] = "*"; result[4] = "x";
-	result[5] = "2"; result[6] = ")"; result[7] = "("; result[8] = "-"; result[9] = "y";
-    result[10] = "4"; result[11] = ")"; result[12] = "z"; result[13] = ")";
+	result[0] = "("; result[1] = "+"; result[2] = "(", result[3] = "-"; result[4] = "(";
+	result[5] = "*"; result[6] = "1"; result[7] = "2"; result[8] = ")"; result[9] = "3";
+    result[10] = ")"; result[11] = "4"; result[12] = ")";
 
 	struct cons_t *work = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 	int i = 0;
+	int j = 0;
 	if(result[0] == "("){ 
 		i = 1;
 	}
 	struct cons_t *start;
 	start = work;
-	struct cons_t *memory;
+	struct cons_t **memory = (struct cons_t**)calloc(1,sizeof(struct cons_t*));;
 	do{
 		if(result[i] == "("){
-			memory = work;
+			memory[j] = work;
 			struct cons_t *new = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 			work->car = new;
 			work = new;
-			i++;
+			i++; j++;
 		}
 		else{
 			if(distinction(result[i]) == 0){
@@ -50,8 +51,9 @@ int main()
 			}
 			i++;
 			if(result[i] == ")"){
+				j--;
 				work->cdr = NULL;
-				work = memory;
+				work = memory[j];
 				i++;
 			}
 			if(result[i] != NULL){
