@@ -4,6 +4,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+int distinction(char *c);
+
 typedef struct cons_t{
 	int type;
 	union{
@@ -72,11 +74,6 @@ void free_token(char** token)
 
 
 void cons_cell(char** result){
-	char **result = (char **)calloc(100,sizeof(char*));
-	result[0] = "("; result[1] = "+"; result[2] = "(", result[3] = "-"; result[4] = "(";
-	result[5] = "*"; result[6] = "1"; result[7] = "2"; result[8] = ")"; result[9] = "3";
-    result[10] = ")"; result[11] = "4"; result[12] = ")";
-
 	struct cons_t *work = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 	int i = 0;
 	int j = 0;
@@ -117,8 +114,15 @@ void cons_cell(char** result){
 			}
 		}
 	}while(result[i] != NULL);
-	asm("int3");
-
 	free(work);
-	return 0;
+}
+
+int distinction(char *c)
+{
+	if(isdigit(c[0]) != 0)
+		return 0;
+	if(c[0] == '-' && isdigit(c[1]) != 0)
+		return 0;
+	else
+		return 1;
 }
