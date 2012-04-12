@@ -15,6 +15,11 @@ typedef struct cons_t{
 
 int distinction(char *c);
 
+enum{
+	NUM,
+	CHA,
+	DIV
+};
 
 int main()
 {
@@ -34,6 +39,7 @@ int main()
 	struct cons_t **memory = (struct cons_t**)calloc(1,sizeof(struct cons_t*));;
 	do{
 		if(result[i] == "("){
+			work->type = DIV;
 			memory[j] = work;
 			struct cons_t *new = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 			work->car = new;
@@ -42,11 +48,11 @@ int main()
 		}
 		else{
 			if(distinction(result[i]) == 0){
-				work->type = 0;
+				work->type = NUM;
 				work->ivalue = atoi(result[i]);
 			}
 			else{
-				work->type = 1;
+				work->type = CHA;
 				work->svalue = result[i];
 			}
 			i++;
