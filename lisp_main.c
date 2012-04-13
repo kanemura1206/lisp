@@ -1,31 +1,53 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 #include "my_lisp.h"
+
+typedef struct cons_t{
+	int type;
+	union{
+		struct cons_t *car;
+		int ivalue;
+		char *svalue;
+	};
+	struct cons_t *cdr;
+}cons_t;
+
 
 int main(int argc, char *argv[])
 {
 	char *input;
-
 	if (argc == 1){
-	input = input_formula();
+		input = input_formula();
 	}
 	else if (argc == 2){
+		char moji[100];
 		FILE *fp;
-		int i = 0;
-		fp = fopen(argv[1],"r");
-		while ((input[i] = getc(fp)) != EOF){
-			i++;
+		if((fp=fopen(argv[1],"r"))==NULL){
+			printf("ファイルを開けません。\n");
+			return -1;
 		}
-		i++;
-		input[i] = '\0';
-		fclose(fp);
+		else{
+			fgets(moji,100,fp);
+			int i;
+			for(i = 0; moji[i] != '\0'; i++){
+				if(moji[i] == '\n'){
+					moji[i] = '\0';
+				}
+			}
+			input = moji;
+			printf("%s\n",input);
+			fclose(fp);
+		}		
 	}
 	char **result;
 	result = resolve(input);
-	cons_cell(result);
+	struct cons_t *tree;
+	tree = cons_cell(result);
+	dump_tree(tree);
 	free_token(result);
+	free_tree(tree);
 	return 0;
 }
+
+
+//--arg
+//valgrind --leak-check=full
