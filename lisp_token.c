@@ -12,7 +12,7 @@ char* input_formula()
 }
 
 
-char** resolve(char* input)
+char** split(char* input)
 {
 	int len = strlen(input);
 	char **token = (char **)calloc(len,sizeof(char*));

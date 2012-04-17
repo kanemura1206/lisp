@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "my_lisp.h"
 
 typedef struct cons_t{
@@ -11,40 +12,49 @@ typedef struct cons_t{
 	struct cons_t *cdr;
 }cons_t;
 
+#define STRSIZE 126
 
 int main(int argc, char *argv[])
 {
-	char *input;
-	if (argc == 1){
-		input = input_formula();
-	}
-	else if (argc == 2){
-		char moji[100];
-		FILE *fp;
-		if((fp=fopen(argv[1],"r"))==NULL){
-			printf("ファイルを開けません。\n");
-			return -1;
-		}
-		else{
-			fgets(moji,100,fp);
-			int i;
-			for(i = 0; moji[i] != '\0'; i++){
-				if(moji[i] == '\n'){
-					moji[i] = '\0';
-				}
+	int j = 0;
+	do{
+		char *input;
+		if (argc == 1){
+			input = input_formula();
+			if ( (strcmp(input,"quit") == 0) || (strcmp(input,"q") == 0) ){
+				return -1;
 			}
-			input = moji;
-			printf("%s\n",input);
-			fclose(fp);
-		}		
-	}
-	char **result;
-	result = resolve(input);
-	struct cons_t *tree;
-	tree = cons_cell(result);
-	dump_tree(tree);
-	free_token(result);
-	free_tree(tree);
+		}
+		else if (argc == 2){
+			char str[STRSIZE];
+			FILE *fp;
+			if ((fp=fopen(argv[1],"r")) == NULL) {
+				printf("Can't Open File\n");
+				return -1;
+			}
+			else {
+				// TODO fix strsize. is STRSIZE too small!?
+				fgets(str,STRSIZE,fp);
+				int i;
+				for(i = 0; str[i] != '\0'; i++){
+					if(str[i] == '\n'){
+						str[i] = '\0';
+					}
+				}
+				input = str;
+				printf("%s\n",input);
+				fclose(fp);
+			}		
+		}
+		char **result;
+		result = split(input);
+		struct cons_t *tree;
+		tree = cons_cell(result);
+		dump_tree(tree);
+		discriminate(tree);
+		free_token(result);
+		free_tree(tree);
+	}while (j == 0);
 	return 0;
 }
 

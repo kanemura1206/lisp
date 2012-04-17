@@ -29,11 +29,8 @@ int main()
     result[10] = ")"; result[11] = "4"; result[12] = ")";
 
 	struct cons_t *work = (struct cons_t*)calloc(1,sizeof(struct cons_t));
-	int i = 0;
-	int j = 0;
-	if(result[0] == "("){ 
-		i = 1;
-	}
+	int i = 1;
+	int j = 1;
 	struct cons_t *start;
 	start = work;
 	struct cons_t **memory = (struct cons_t**)calloc(1,sizeof(struct cons_t*));;
