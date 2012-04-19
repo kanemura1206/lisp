@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 		char *input;
 		if (argc == 1){
 			input = input_formula();
-			if ( strcmp(input,"quit") || strcmp(input,"q") ){
+			if ( strcmp(input,"quit") == 0 || strcmp(input,"q") == 0){
 				return -1;
 			}
 		}
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 			char str[STRSIZE];
 			FILE *fp;
 			if ((fp=fopen(argv[1],"r")) == NULL) {
-				printf("Can't Open File\n");
+				printf("Can't Open File\n\n");
 				return -1;
 			}
 			else {

@@ -25,11 +25,11 @@ char** split(char* input)
 			do{
 				str[i] = input[j];
 				i++; j++;
-				if (input[j] == '(' || input[j] == ')' || input[j] == ' '){
+				if (input[j] == '(' || input[j] == ')' || input[j] == ' ' || input[j] == '\0'){
 					token[k] = str;
 					k++;
 				}
-			}while (input[j] != '(' && input[j] != ')' && input[j] != ' ');
+			}while (input[j] != '(' && input[j] != ')' && input[j] != ' ' && input[j] != '\0');
 		}
 		else if (input[j] == '(' || input[j] == ')'){
 			char *str = (char *)calloc(len,sizeof(char));
@@ -55,7 +55,7 @@ void dump_token(char** token){
 void free_token(char** token)
 {
 	int i;
-	for(i = 0; token[i-1] != NULL; i++){
+	for(i = 0; token[i] != NULL; i++){
 		free(token[i]);
 	}
 	free(token);
