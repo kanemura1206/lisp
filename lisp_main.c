@@ -16,13 +16,11 @@ typedef struct cons_t{
 
 int main(int argc, char *argv[])
 {
+	int quit = 0;
 	do{
 		char *input;
 		if (argc == 1){
 			input = input_formula();
-			if ( strcmp(input,"quit") == 0 || strcmp(input,"q") == 0){
-				return -1;
-			}
 		}
 		else if (argc == 2){
 			char str[STRSIZE];
@@ -51,9 +49,13 @@ int main(int argc, char *argv[])
 		tree = cons_cell(result);
 		dump_tree(tree);
 		discriminate(tree);
+		if (strcmp(tree->svalue,"quit") == 0 || strcmp(tree->svalue,"q") == 0){
+			quit = 1;
+		}
 		free_token(result);
 		free_tree(tree);
-	}while (1);
+		printf("\n");
+	}while (quit == 0);
 	return 0;
 }
 

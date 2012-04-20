@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define TABLE_SIZE 100;
 
 typedef struct cons_t{
 	int type;
@@ -19,7 +18,7 @@ typedef struct cell{
 	int value;
 }cell;
 
-//struct cell *table[TABLE_SIZE];
+static int j = 2;
 
 
 enum{
@@ -28,23 +27,25 @@ enum{
 	DIV
 };
 
-float calcular(struct cons_t *work,struct cell **table);
-float caladd(struct cons_t *work,struct cell **table);
-float calsub(struct cons_t *work,struct cell **table);
-float calmul(struct cons_t *work,struct cell **table);
-float caldiv(struct cons_t *work,struct cell **table);
-float calcom_r(struct cons_t *work,struct cell **table);
-float calcom_l(struct cons_t *work,struct cell **table);
-float branch(struct cons_t *work,struct cell **table);
-float calif(struct cons_t *work,struct cell **table);
-float calsetq(struct cons_t *work,struct cell **table);
-float value_of(struct cons_t *work,struct cell **table);
-float search_table(char *key,struct cell **table);
+float calcular(struct cons_t *work);
+float caladd(struct cons_t *work);
+float calsub(struct cons_t *work);
+float calmul(struct cons_t *work);
+float caldiv(struct cons_t *work);
+float calcom_r(struct cons_t *work);
+float calcom_l(struct cons_t *work);
+float branch(struct cons_t *work);
+float calif(struct cons_t *work);
+void calsetq(struct cons_t *work);
+float value_of(struct cons_t *work);
+int search_table(char *key);
+void free_table();
+
+static struct cell **table;
 
 void discriminate(struct cons_t *work)
-{ 
+{
 	struct cell **tab = (struct cell**)calloc(1,sizeof(struct cell));
-	static struct cell **table;
 	static int static_value;
 	if (static_value == 0){
 		table = tab;
@@ -56,146 +57,145 @@ void discriminate(struct cons_t *work)
 		table[1] = q;
 		static_value++;
 	}
-	if (strcmp(work->svalue,"+") == 0 || strcmp(work->svalue,"-") == 0 ||
-	   strcmp(work->svalue,"*") == 0 || strcmp(work->svalue,"/") == 0){
-		printf("= %f\n\n",calcular(work,table));
-	}
-	else if (strcmp(work->svalue,"<") ==0 || strcmp(work->svalue,">") == 0){
-		float k = calcular(work,table);
-		if(k == 1){
-			printf("T\n\n");
-		}
-		else if(k == 0){
-			printf("Nil\n\n");
-		}
-	}
-	else if (strcmp(work->svalue,"if") == 0){
-		printf("%f\n\n",calcular(work,table));
+	if (strcmp(work->svalue,"quit") == 0 || strcmp(work->svalue,"q") == 0){
+		free_table();
+		free(tab);
 	}
 	else if (strcmp(work->svalue,"setq") == 0){
-		calsetq(work->cdr,table);
-		printf("\n");
+		calsetq(work->cdr);
 	}
-	else{
-		printf("%f\n\n",value_of(work,table));
+    else{
+		if (strcmp(work->svalue,"+") == 0 || strcmp(work->svalue,"-") == 0 ||
+			strcmp(work->svalue,"*") == 0 || strcmp(work->svalue,"/") == 0){
+			printf("= %f\n",calcular(work));
+		}
+		else if (strcmp(work->svalue,"<") ==0 || strcmp(work->svalue,">") == 0){
+			float k = calcular(work);
+			if(k == 1){
+				printf("T\n");
+			}
+			else if(k == 0){
+				printf("Nil\n");
+			}
+		}
+		else if (strcmp(work->svalue,"if") == 0){
+			printf("%f\n",calcular(work));
+		}
+		else{
+			printf("%f\n",value_of(work));
+		}
 	}
 }
 
-float calcular(struct cons_t *work,struct cell **table)
+float calcular(struct cons_t *work)
 {
 	if (strcmp(work->svalue,"+") == 0){
-		return caladd(work->cdr,table);
+		return caladd(work->cdr);
 	}
 	else if (strcmp(work->svalue,"-") == 0){
-		return calsub(work->cdr,table);
+		return calsub(work->cdr);
 	}
 	else if (strcmp(work->svalue,"*") == 0){
-		return calmul(work->cdr,table);
+		return calmul(work->cdr);
 	}
 	else if (strcmp(work->svalue,"/") == 0){
-		return caldiv(work->cdr,table);
+		return caldiv(work->cdr);
 	}
 	else if (strcmp(work->svalue,"<") == 0){
-		return calcom_r(work->cdr,table);
+		return calcom_r(work->cdr);
 	}
 	else if (strcmp(work->svalue,">") == 0){
-		return calcom_l(work->cdr,table);
+		return calcom_l(work->cdr);
 	}
 	else if (strcmp(work->svalue,"if") == 0){
-		return calif(work->cdr,table);
-	}
-	else if (strcmp(work->svalue,"setq") == 0){
-		return calsetq(work->cdr,table);
-	}
-	else{
-		printf("%f\n\n",value_of(work,table));
+		return calif(work->cdr);
 	}
 }
 
-float caladd(struct cons_t *work,struct cell **table)
+float caladd(struct cons_t *work)
 {
 	if (work->type != DIV){
 		if(work->cdr != NULL){
-			return value_of(work,table) + caladd(work->cdr,table);
+			return value_of(work) + caladd(work->cdr);
 		}
 		else if (work->cdr == NULL){
-			return value_of(work,table);
+			return value_of(work);
 		}
 	}
 	else if (work->type == DIV){
 		if (work->cdr != NULL){
-			return calcular(work->car,table) + caladd(work->cdr,table);
+			return calcular(work->car) + caladd(work->cdr);
 		}
 		else if(work->cdr == NULL){
-			return calcular(work->car,table);
+			return calcular(work->car);
 		}
 	}
 }
 
-float calsub(struct cons_t *work,struct cell **table)
+float calsub(struct cons_t *work)
 {
 	if (work->type != DIV){
 		if(work->cdr != NULL){
-			return value_of(work,table) - caladd(work->cdr,table);
+			return value_of(work) - caladd(work->cdr);
 		}
 		else if (work->cdr == NULL){
-			return value_of(work,table);
+			return value_of(work);
 		}
 	}
 	else if (work->type == DIV){
 		if (work->cdr != NULL){
-			return calcular(work->car,table) - caladd(work->cdr,table);
+			return calcular(work->car) - caladd(work->cdr);
 		}
 		else if(work->cdr == NULL){
-			return calcular(work->car,table);
+			return calcular(work->car);
 		}
 	}
 }
-float calmul(struct cons_t *work,struct cell **table)
+float calmul(struct cons_t *work)
 {
 	if (work->type != DIV){
 		if(work->cdr != NULL){
-			return value_of(work,table) * caladd(work->cdr,table);
+			return value_of(work) * caladd(work->cdr);
 		}
 		else if (work->cdr == NULL){
-			return value_of(work,table);
+			return value_of(work);
 		}
 	}
 	else if (work->type == DIV){
 		if (work->cdr != NULL){
-			return calcular(work->car,table) * caladd(work->cdr,table);
+			return calcular(work->car) * caladd(work->cdr);
 		}
 		else if(work->cdr == NULL){
-			return calcular(work->car,table);
-		}
-	}
-}
-
-float caldiv(struct cons_t *work,struct cell **table)
-{
-	if (work->type != DIV){
-		if(work->cdr != NULL){
-			return value_of(work,table) / caladd(work->cdr,table);
-		}
-		else if (work->cdr == NULL){
-			return value_of(work,table);
-		}
-	}
-	else if (work->type == DIV){
-		if (work->cdr != NULL){
-			return calcular(work->car,table) / caladd(work->cdr,table);
-		}
-		else if(work->cdr == NULL){
-			return calcular(work->car,table);
+			return calcular(work->car);
 		}
 	}
 }
 
-float calcom_r(struct cons_t *work,struct cell **table)
+float caldiv(struct cons_t *work)
+{
+	if (work->type != DIV){
+		if(work->cdr != NULL){
+			return value_of(work) / caladd(work->cdr);
+		}
+		else if (work->cdr == NULL){
+			return value_of(work);
+		}
+	}
+	else if (work->type == DIV){
+		if (work->cdr != NULL){
+			return calcular(work->car) / caladd(work->cdr);
+		}
+		else if(work->cdr == NULL){
+			return calcular(work->car);
+		}
+	}
+}
+
+float calcom_r(struct cons_t *work)
 {
 	if (work->cdr != NULL){
-		if (branch(work,table) < branch(work->cdr,table)){
-			return calcom_r(work->cdr,table);
+		if (branch(work) < branch(work->cdr)){
+			return calcom_r(work->cdr);
 		}
 		else{
 			return 0;
@@ -206,11 +206,11 @@ float calcom_r(struct cons_t *work,struct cell **table)
 	}
 }
 
-float calcom_l(struct cons_t *work,struct cell **table)
+float calcom_l(struct cons_t *work)
 {
 	if (work->cdr != NULL){
-		if (branch(work,table) > branch(work->cdr,table)){
-			return calcom_l(work->cdr,table);
+		if (branch(work) > branch(work->cdr)){
+			return calcom_l(work->cdr);
 		}
 		else{
 			return 0;
@@ -221,66 +221,76 @@ float calcom_l(struct cons_t *work,struct cell **table)
 	}
 }
 
-float branch(struct cons_t *work,struct cell **table)
+float branch(struct cons_t *work)
 {
 	if (work->type == DIV){
-		return calcular(work->car,table);
+		return calcular(work->car);
 	}
 	else{
-		return value_of(work,table);
+		return value_of(work);
 	}
 } 
 
-float calif(struct cons_t *work,struct cell **table)
+float calif(struct cons_t *work)
 {
-	if (branch(work,table) == 1){
-		return branch(work->cdr,table);
+	if (branch(work) == 1){
+		return branch(work->cdr);
 	}
-	else if (branch(work,table) == 0){
-		return branch(work->cdr->cdr,table);
+	else if (branch(work) == 0){
+		return branch(work->cdr->cdr);
 	}
 }
 
-float calsetq(struct cons_t *work,struct cell **table)
+void calsetq(struct cons_t *work)
 {
 	int i = 0;
-	static int j = 2;
+	int k = 0;
 	do{
 		if(strcmp(table[i]->key,work->svalue) == 0){
-			printf("'%s' is already exists/n/n",work->svalue);
-			exit(1);
+			printf("'%s' is already exists\n",work->svalue);
+			k = 1;
 		}
 		i++;
 	}while (i < j);
-	j++;
-	struct cell *tmp = (struct cell*)calloc(1,sizeof(struct cell));
-	int len = strlen(work->svalue);
-	tmp->key = (char*)malloc(sizeof(char)*len-1);
-	strncpy(tmp->key,work->svalue,len);
-	tmp->value = branch(work->cdr,table);
-	table[i] = tmp;
-	return table[i]->value;
+	if (k == 0){
+		j++;
+		struct cell *tmp = (struct cell*)calloc(1,sizeof(struct cell));
+		int len = strlen(work->svalue);
+		tmp->key = (char*)malloc(sizeof(char)*len-1);
+		strncpy(tmp->key,work->svalue,len);
+		tmp->value = branch(work->cdr);
+		table[i] = tmp;
+	}
+//	table[i+1] = NULL;
 }
 
-float value_of(struct cons_t *work,struct cell **table)
+float value_of(struct cons_t *work)
 {
 	if (work->type == CHA){
-		return search_table(work->svalue,table);
+		return table[search_table(work->svalue)]->value;
 	}
 	else{
 		return work->ivalue;
 	}
 }
 
-float search_table(char *key,struct cell **table)
+int search_table(char *key)
 {
 	int i = 0;
 	do{
 		if(strcmp(table[i]->key,key) == 0){
-			return table[i]->value;
+			return i;
 		}
 		i++;
-	}while (table[i] != NULL);
-	printf("'%s' is not exist\n\n",key);
-	exit(1);
+	}while (i < j);
+	printf("'%s' is not exist\n",key);
+	return -1;
+}
+
+void free_table(){
+	int i = 0;
+	do{
+		free(table[i]);
+		i++;
+	}while (i < j);
 }
