@@ -23,18 +23,18 @@ enum{
 int format(char *c);
 void free_memory(struct cons_t **memory);
 
-struct cons_t* cons_cell(char** result){
+struct cons_t* cons_cell(char** token){
 	struct cons_t *work = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 	int i = 0;
 	int j = 0;
 	struct cons_t *start;
 	start = work;
 	struct cons_t **memory = (struct cons_t**)calloc(1,sizeof(struct cons_t*));
-	if (strcmp(result[0],"(") == 0){
+	if (strcmp(token[0],"(") == 0){
 		i = 1;
 	}
 	do{
-		if (strcmp(result[i],"(") == 0){
+		if (strcmp(token[i],"(") == 0){
 			work->type = DIV;
 			memory[j] = work;
 			struct cons_t *new = (struct cons_t*)calloc(1,sizeof(struct cons_t));
@@ -43,32 +43,35 @@ struct cons_t* cons_cell(char** result){
 			i++; j++;
 		}
 		else{
-			if (format(result[i]) == NUM){
+			if (format(token[i]) == NUM){
 				work->type = NUM;
-				work->ivalue = atoi(result[i]);
+				work->ivalue = atoi(token[i]);
 				i++;
 			}
-			else if ( (format(result[i]) == CHA) && (strcmp(result[i],")") != 0) ){
+			else if ( (format(token[i]) == CHA) && (strcmp(token[i],")") != 0) ){
 				work->type = CHA;
-				work->svalue = result[i];
+				int slen = strlen(token[i]);
+				work->svalue = malloc(sizeof(char)*(slen+1));
+				strcpy(work->svalue,token[i]);
 				i++;
 			}
-			if (result[i] != NULL){
-				if (strcmp(result[i],")") == 0){
+			if (token[i] != NULL){
+				if (strcmp(token[i],")") == 0){
 					i++; j--;
 					work->cdr = NULL;
 					work = memory[j];
 				}
-				if (result[i] != NULL && strcmp(result[i],")") != 0){
+			}
+			if (token[i] != NULL){
+				if(strcmp(token[i],")") != 0){
 					struct cons_t *next = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 					work->cdr = next;
 					work = next;
 				}
 			}
 		}	
-	}while (result[i] != NULL);
-	
-	free(memory);
+	}while (token[i] != NULL);
+//	free(memory);
 	return start;
 }
 
@@ -128,6 +131,9 @@ void free_tree(struct cons_t *work)
 		free_tree(work->cdr);
 	}
 	else if (work->cdr == NULL){
+		if (work->type == CHA){
+			free(work->svalue);
+		}
 		free(work);
 	}
 }

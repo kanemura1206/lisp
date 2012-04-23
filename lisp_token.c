@@ -15,7 +15,7 @@ char* input_formula()
 char** split(char* input)
 {
 	int len = strlen(input);
-	char **token = (char **)calloc(len,sizeof(char*));
+	char **token = (char **)calloc(126,sizeof(char*));
 	int i,j,k;
 	j = 0; k = 0;
 	do{
@@ -25,16 +25,19 @@ char** split(char* input)
 			do{
 				str[i] = input[j];
 				i++; j++;
-				if (input[j] == '(' || input[j] == ')' || input[j] == ' ' || input[j] == '\0'){
-					token[k] = str;
-					k++;
-				}
 			}while (input[j] != '(' && input[j] != ')' && input[j] != ' ' && input[j] != '\0');
+			int slen = strlen(str);
+			token[k]  = malloc(sizeof(char)*(slen+1));
+			strcpy(token[k],str);
+			free(str);
+			k++;
 		}
 		else if (input[j] == '(' || input[j] == ')'){
-			char *str = (char *)calloc(len,sizeof(char));
+			char *str = (char *)calloc(1,sizeof(char));
 			str[0] = input[j];
-			token[k] = str;
+			token[k] = malloc(sizeof(char)+1);
+			strcpy(token[k],str);
+			free(str);
 			j++; k++;
 		}
 		else if (input[j] == ' ')
