@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project(lisp)
 
-set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS_DEBAG "-o0 -g3")
 set(CMAKE_C_FLAGS_RELEASE "-o2")
 

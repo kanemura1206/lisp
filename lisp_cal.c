@@ -22,7 +22,7 @@ static int tableSIZE = 2;
 static int funcnumber = 0;
 static int recursive_tableSIZE = 0;
 static int recursive_prepare = 0;
-static int recursive_point;
+static int recursive_point = 0;
 static struct cell **table;
 static struct cons_t **function;
 static struct cell **recursive_table;
@@ -127,24 +127,7 @@ float calcular(struct cons_t *work)
 		}
 		else if (search_function(work) != -1){
 			int i = search_function(work);
-			int k = 0;
-			float f = call_function(work->cdr,i);
-			if (function[i]->type == RECURSIVE){
-				struct cons_t *tmp;
-				tmp = function[i]->cdr->car;
-				int j = recursive_point;
-				do{
-					j--;
-					recursive_table[j] = NULL;
-					if(tmp->cdr != NULL){
-						tmp = tmp->cdr;
-					}
-					else{
-						k = 1;
-					}
-				}while (k == 0);
-			}
-			return f;
+			return call_function(work->cdr,i);
 		}
 		else{
 			return value_of(work);
@@ -279,12 +262,11 @@ float value_of(struct cons_t *work)
 			}
 			i++;
 		}while (i < tableSIZE);
-		int j = recursive_point;
+		int j = recursive_tableSIZE;
 		do{
 			j--;
 			if (recursive_table[j] != NULL){
 				if (strcmp(recursive_table[j]->key,work->svalue) == 0){
-					printf("recursive_table[%d] = %d\n",j,recursive_table[j]->value);
 					return recursive_table[j]->value;
 				}
 			}
@@ -394,7 +376,25 @@ float call_function(struct cons_t *work,int i)
 	else{
 		function_setq(work,variable);
 	}
-	return calcular(function[i]->cdr->cdr->car);
+	float f =  calcular(function[i]->cdr->cdr->car);
+	if (function[i]->type == RECURSIVE){
+		int k = 0;
+		struct cons_t *tmp;
+		tmp = function[i]->cdr->car;
+		int j = recursive_tableSIZE;
+		do{
+			j--;
+			recursive_table[j] = NULL;
+			if(tmp->cdr != NULL){
+				tmp = tmp->cdr;
+			}
+			else{
+				k = 1;
+			}
+		}while (k == 0);
+		recursive_tableSIZE = j;
+	}
+	return f;
 }
 
 void function_setq(struct cons_t *work,struct cons_t *variable)
@@ -453,7 +453,7 @@ int check_recursive(struct cons_t *work,char *func)
 void recursive_setq(struct cons_t *work,struct cons_t *variable)
 {
 	if (recursive_prepare == 0){
-		recursive_table = calloc(1,sizeof(struct cell));
+		recursive_table = calloc(1,sizeof(struct cell*));
 		recursive_prepare = 1;
 	}
 	int len = strlen(variable->svalue);
@@ -466,5 +466,4 @@ void recursive_setq(struct cons_t *work,struct cons_t *variable)
 		recursive_setq(work->cdr,variable->cdr);
 	}
 	recursive_tableSIZE++;
-	recursive_point = recursive_tableSIZE;
 }
