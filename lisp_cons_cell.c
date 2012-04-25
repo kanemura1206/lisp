@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 
-typedef struct cons_t{
+struct cons_t{
 	int type;
 	union{
 		struct cons_t *car;
@@ -12,7 +12,7 @@ typedef struct cons_t{
 		char *svalue;
 	};
 	struct cons_t *cdr;
-}cons_t;
+};
 
 enum{
 	NUM,

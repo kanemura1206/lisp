@@ -3,7 +3,7 @@
 #include <string.h>
 #include "my_lisp.h"
 
-typedef struct cons_t{
+struct cons_t{
 	int type;
 	union{
 		struct cons_t *car;
@@ -11,7 +11,7 @@ typedef struct cons_t{
 		char *svalue;
 	};
 	struct cons_t *cdr;
-}cons_t;
+};
 
 #define STRSIZE 126
 
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 		token = split(input);
 		struct cons_t *tree;
 		tree = cons_cell(token);
-		dump_tree(tree);
+		//dump_tree(tree);
 		discriminate(tree);
 		if (strcmp(tree->svalue,"quit") == 0 || strcmp(tree->svalue,"q") == 0){
 			quit = 1;
@@ -57,7 +57,9 @@ int main(int argc, char *argv[])
 		/* free_token(token); */
 		/* free(input); */
 		printf("\n");
-		input = input_formula();
+		if (quit == 0){
+			input = input_formula();
+		}
 	}while (quit == 0);
 	return 0;
 }
