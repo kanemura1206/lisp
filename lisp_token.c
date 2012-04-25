@@ -8,6 +8,8 @@
 char* input_formula()
 {
 	char *c = readline(">>>");
+	add_history(c);
+	write_history(".my_history");
 	return c;
 }
 
