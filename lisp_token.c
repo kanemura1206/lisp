@@ -3,6 +3,7 @@
 #include <string.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "my_lisp.h"
 
 
 char* input_formula()

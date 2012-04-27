@@ -2,28 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-
-
-struct cons_t{
-	int type;
-	union{
-		struct cons_t *car;
-		int ivalue;
-		char *svalue;
-	};
-	struct cons_t *cdr;
-};
-
-enum{
-	NUM,
-	CHA,
-	DIV,
-};
+#include "my_lisp.h"
 
 int format(char *c);
 void free_memory(struct cons_t **memory);
 
-struct cons_t* cons_cell(char** token){
+struct cons_t* cons_cell(char** token)
+{
 	struct cons_t *work = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 	int i = 0;
 	int j = 0;
@@ -35,7 +20,7 @@ struct cons_t* cons_cell(char** token){
 	}
 	do{
 		if (strcmp(token[i],"(") == 0){
-			work->type = DIV;
+			work->type = CAR;
 			memory[j] = work;
 			struct cons_t *new = (struct cons_t*)calloc(1,sizeof(struct cons_t));
 			work->car = new;
@@ -110,7 +95,7 @@ void dump_tree(struct cons_t *work)
 			dump_tree(work->cdr);
 		}
 	}
-	else if (work->type == DIV){
+	else if (work->type == CAR){
 		printf("car ");
 		if (work->cdr == NULL){
 			printf("\n");
@@ -125,7 +110,7 @@ void dump_tree(struct cons_t *work)
 
 void free_tree(struct cons_t *work)
 {
-	if (work->type == DIV){
+	if (work->type == CAR){
 		free_tree(work->car);
 	}
 	if (work->cdr != NULL){

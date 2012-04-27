@@ -7,3 +7,25 @@ void dump_tree(struct cons_t *work);
 void free_tree(struct cons_t *work);
 void discriminate(struct cons_t *work);
 
+
+struct cons_t{
+	int type;
+	union{
+		struct cons_t *car;
+		int ivalue;
+		char *svalue;
+	};
+	struct cons_t *cdr;
+};
+
+struct cell{
+	char *key;
+	int value;
+};
+
+enum{
+	NUM,
+	CHA,
+	CAR,
+	RECURSIVE
+};

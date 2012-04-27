@@ -1,19 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 #include "my_lisp.h"
 
 int execute(char *input);
-
-struct cons_t{
-	int type;
-	union{
-		struct cons_t *car;
-		int ivalue;
-		char *svalue;
-	};
-	struct cons_t *cdr;
-};
 
 #define STRSIZE 128
 
@@ -25,7 +17,6 @@ int main(int argc, char *argv[])
 	read_history(".my_history");
 	if (argc == 1){
 		input = input_formula();
-		add_history(input);
 		quit = execute(input);
 		free(input);
 	}
@@ -37,7 +28,7 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 		else {
-			// TODO fix strsize. is STRSIZE too small!?
+			/* // TODO fix strsize. is STRSIZE too small!? */
 			fgets(str,STRSIZE,fp);
 			char tmp[STRSIZE];
 			while(fgets(tmp,STRSIZE,fp) != NULL){
@@ -57,6 +48,7 @@ int main(int argc, char *argv[])
 		}
 		free(input);
 	}
+	clear_history();
 	return 0;
 }
 
@@ -67,7 +59,7 @@ int execute(char *input)
 	token = split(input);
 	struct cons_t *tree;
 	tree = cons_cell(token);
-	//dump_tree(tree);
+	dump_tree(tree);
 	discriminate(tree);
 	if (strcmp(tree->svalue,"quit") == 0 || strcmp(tree->svalue,"q") == 0){
 		quit = 1;

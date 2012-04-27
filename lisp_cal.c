@@ -1,22 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "my_lisp.h"
 
-
-struct cons_t{
-	int type;
-	union{
-		struct cons_t *car;
-		int ivalue;
-		char *svalue;
-	};
-	struct cons_t *cdr;
-};
-
-struct cell{
-	char *key;
-	int value;
-};
 
 static int tableSIZE = 2;
 static int funcnumber = 0;
@@ -28,12 +14,6 @@ static struct cell **table;
 static struct cons_t **function;
 static struct cell **recursive_table;
 
-enum{
-	NUM,
-	CHA,
-	DIV,
-	RECURSIVE
-};
 
 float calcular(struct cons_t *work);
 float caladd(struct cons_t *work);
@@ -215,7 +195,7 @@ float calcom_l(struct cons_t *work)
 
 float branch(struct cons_t *work)
 {
-	if (work->type == DIV){
+	if (work->type == CAR){
 		return calcular(work->car);
 	}
 	else{
@@ -284,7 +264,7 @@ float value_of(struct cons_t *work)
 
 int check_tree(struct cons_t *work)
 {
-	if (work->type != DIV){
+	if (work->type != CAR){
 		if(work->cdr != NULL){
 			return search_cha(work) + check_tree(work->cdr);
 		}
@@ -292,7 +272,7 @@ int check_tree(struct cons_t *work)
 			return search_cha(work);
 		}
 	}
-	else if (work->type == DIV){
+	else if (work->type == CAR){
 		if (work->cdr != NULL){
 			return check_tree(work->car) + check_tree(work->cdr);
 		}
@@ -423,7 +403,7 @@ int check_recursive(struct cons_t *work,char *func)
 			i = 1;
 		}
 	}
-	if (work->type != DIV){
+	if (work->type != CAR){
 		if(work->cdr != NULL){
 			return i + check_recursive(work->cdr,func);
 		}
@@ -431,7 +411,7 @@ int check_recursive(struct cons_t *work,char *func)
 			return i;
 		}
 	}
-	else if (work->type == DIV){
+	else if (work->type == CAR){
 		if (work->cdr != NULL){
 			return check_recursive(work->car,func) + check_recursive(work->cdr,func);
 		}
@@ -477,7 +457,7 @@ void free_table()
 
 void free_function(struct cons_t *work)
 {
-	if (work->type == DIV){
+	if (work->type == CAR){
 		free_function(work->car);
 	}
 	if (work->cdr != NULL){
