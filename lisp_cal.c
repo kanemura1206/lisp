@@ -21,6 +21,7 @@ struct cell{
 static int tableSIZE = 2;
 static int funcnumber = 0;
 static int recursive_tableSIZE = 0;
+static int caldefun_prepare = 0;
 static int recursive_prepare = 0;
 static int recursive_point = 0;
 static struct cell **table;
@@ -45,7 +46,6 @@ float branch(struct cons_t *work);
 float calif(struct cons_t *work);
 void calsetq(struct cons_t *work);
 float value_of(struct cons_t *work);
-void free_table();
 int check_tree(struct cons_t *work);
 int search_cha(struct cons_t *work);
 void caldefun(struct cons_t *work);
@@ -54,16 +54,15 @@ float call_function(struct cons_t *work,int i);
 void function_setq(struct cons_t *work,struct cons_t *variable);
 int check_recursive(struct cons_t *work,char *func);
 void recursive_setq(struct cons_t *work,struct cons_t *variable);
-void free_recursive();
+void free_table();
+void free_function(struct cons_t *work);
 
 
 void discriminate(struct cons_t *work)
 {
 	static int static_value;
-	struct cell **tab;
 	if (static_value == 0){
-		tab = calloc(1,sizeof(struct cell));
-		table = tab;
+		table = calloc(32,sizeof(struct cell*));
 		struct cell *p = (struct cell*)calloc(1,sizeof(struct cell));
 		p->key = "T"; p->value = 1;
 		table[0] = p;
@@ -77,7 +76,13 @@ void discriminate(struct cons_t *work)
 		calsetq(work->cdr);
 	}
 	else if (strcmp(work->svalue,"quit") == 0 || strcmp(work->svalue,"q") == 0){
-		//free_table();
+		free_table();
+		int i;
+		if (caldefun_prepare == 1){
+			for(i = 0; function[i] != NULL; i++){
+				free_function(function[i]);
+			}
+		}
 	}
 	else if (strcmp(work->svalue,"defun") == 0){
 		caldefun(work);
@@ -151,7 +156,7 @@ float caladd(struct cons_t *work)
 float calsub(struct cons_t *work)
 {
 	if(work->cdr != NULL){
-		return branch(work) - caladd(work->cdr);
+		return branch(work) - calsub(work->cdr);
 	}
 	else if(work->cdr == NULL){
 		return branch(work);
@@ -161,7 +166,7 @@ float calsub(struct cons_t *work)
 float calmul(struct cons_t *work)
 {
 	if(work->cdr != NULL){
-		return branch(work) * caladd(work->cdr);
+		return branch(work) * calmul(work->cdr);
 	}
 	else if(work->cdr == NULL){
 		return branch(work);
@@ -171,7 +176,7 @@ float calmul(struct cons_t *work)
 float caldiv(struct cons_t *work)
 {
 	if(work->cdr != NULL){
-		return branch(work) / caladd(work->cdr);
+		return branch(work) / caldiv(work->cdr);
 	}
 	else if(work->cdr == NULL){
 		return branch(work);
@@ -277,14 +282,6 @@ float value_of(struct cons_t *work)
 	}
 }
 
-void free_table(){
-	int i = 0;
-	do{
-		free(table[i]);
-		i++;
-	}while (i < tableSIZE);
-}
-
 int check_tree(struct cons_t *work)
 {
 	if (work->type != DIV){
@@ -338,10 +335,9 @@ int search_cha(struct cons_t *work)
 
 void caldefun(struct cons_t *work)
 {
-	static int into = 0;
-	if (into == 0){
+	if (caldefun_prepare == 0){
 		function = calloc(1,sizeof(struct cons_t*));
-		into = 1;
+		caldefun_prepare = 1;
 	}
 	function[funcnumber] = calloc(1,sizeof(struct cons_t));
 	function[funcnumber] = work->cdr;
@@ -382,16 +378,11 @@ float call_function(struct cons_t *work,int i)
 		struct cons_t *tmp;
 		tmp = function[i]->cdr->car;
 		int j = recursive_tableSIZE;
-		do{
+		while(tmp->cdr != NULL){
 			j--;
-			recursive_table[j] = NULL;
-			if(tmp->cdr != NULL){
-				tmp = tmp->cdr;
-			}
-			else{
-				k = 1;
-			}
-		}while (k == 0);
+			tmp = tmp->cdr;
+		}
+		j--;
 		recursive_tableSIZE = j;
 	}
 	return f;
@@ -453,7 +444,7 @@ int check_recursive(struct cons_t *work,char *func)
 void recursive_setq(struct cons_t *work,struct cons_t *variable)
 {
 	if (recursive_prepare == 0){
-		recursive_table = calloc(1,sizeof(struct cell*));
+		recursive_table = calloc(126,sizeof(struct cell*));
 		recursive_prepare = 1;
 	}
 	int len = strlen(variable->svalue);
@@ -466,4 +457,33 @@ void recursive_setq(struct cons_t *work,struct cons_t *variable)
 		recursive_setq(work->cdr,variable->cdr);
 	}
 	recursive_tableSIZE++;
+}
+
+void free_table()
+{
+	int i;
+	for(i = 0; i < tableSIZE; i++){
+		free(table[i]);
+	}
+	free(table);
+
+	if(recursive_prepare == 1){
+		for(i = 0; recursive_table[i] != NULL; i++){
+			free(recursive_table[i]);
+		}
+		free(recursive_table);
+	}
+}
+
+void free_function(struct cons_t *work)
+{
+	if (work->type == DIV){
+		free_function(work->car);
+	}
+	if (work->cdr != NULL){
+		free_function(work->cdr);
+	}
+	else if (work->cdr == NULL){
+		free(work);
+	}
 }

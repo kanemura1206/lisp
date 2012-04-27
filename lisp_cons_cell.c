@@ -51,7 +51,7 @@ struct cons_t* cons_cell(char** token){
 			else if ( (format(token[i]) == CHA) && (strcmp(token[i],")") != 0) ){
 				work->type = CHA;
 				int slen = strlen(token[i]);
-				work->svalue = malloc(sizeof(char)*(slen+1));
+				work->svalue = calloc(slen+1,sizeof(char));
 				strcpy(work->svalue,token[i]);
 				i++;
 			}
@@ -59,7 +59,9 @@ struct cons_t* cons_cell(char** token){
 				if (strcmp(token[i],")") == 0){
 					i++; j--;
 					work->cdr = NULL;
-					work = memory[j];
+					if (j != -1){
+						work = memory[j];
+					}
 				}
 			}
 			if (token[i] != NULL){
@@ -71,7 +73,6 @@ struct cons_t* cons_cell(char** token){
 			}
 		}	
 	}while (token[i] != NULL);
-//	free(memory);
 	return start;
 }
 
@@ -131,9 +132,9 @@ void free_tree(struct cons_t *work)
 		free_tree(work->cdr);
 	}
 	else if (work->cdr == NULL){
-		if (work->type == CHA){
-			free(work->svalue);
-		}
+		/* if (work->type == CHA){ */
+		/* 	free(work->svalue); */
+		/* } */
 		free(work);
 	}
 }
