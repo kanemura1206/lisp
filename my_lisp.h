@@ -13,6 +13,13 @@ typedef struct cell{
 	int value;
 }cell;
 
+typedef struct func_t{
+	int type;
+	char *func_name;
+	int arg_SIZE;
+	cons_t *tree;
+}func_t;
+
 char* input_formula();
 char** split(char* input);
 void free_token(char** token);
