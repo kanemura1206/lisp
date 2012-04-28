@@ -15,40 +15,41 @@ char* input_formula()
 }
 
 
-char** split(char* input)
+char** split(char* formula)
 {
-	int len = strlen(input);
+	int len = strlen(formula);
 	char **token = (char **)calloc(128,sizeof(char*));
 	int i,j,k;
 	j = 0; k = 0;
 	do{
-		if (input[j] != '(' && input[j] != ')' && input[j] != ' ' && input[j] != '\n' && input[j] != '\t'){
+		if (formula[j] != '(' && formula[j] != ')' && formula[j] != ' ' && formula[j] != '\n' && formula[j] != '\t'){
 			char *str = (char *)calloc(len,sizeof(char));
 			i = 0;
 			do{
-				str[i] = input[j];
+				str[i] = formula[j];
 				i++; j++;
-			}while (input[j] != '(' && input[j] != ')' && input[j] != ' ' && input[j] != '\n' && 
-					input[j] != '\t' && input[j] != '\0');
+			}while (formula[j] != '(' && formula[j] != ')' && formula[j] != ' ' && formula[j] != '\n' && 
+					formula[j] != '\t' && formula[j] != '\0');
 			int slen = strlen(str);
 			token[k]  = malloc(sizeof(char)*(slen+1));
 			strcpy(token[k],str);
 			free(str);
 			k++;
 		}
-		else if (input[j] == '(' || input[j] == ')'){
+		else if (formula[j] == '(' || formula[j] == ')'){
 			char *str = (char *)calloc(len,sizeof(char));
-			str[0] = input[j];
+			str[0] = formula[j];
 			int slen = strlen(str);
 			token[k] = malloc(sizeof(char)*(slen + 1));
 			strcpy(token[k],str);
 			free(str);
 			j++; k++;
+			token[k] = NULL;
 		}
-		else if (input[j] == ' ' || input[j] == '\n' || input[j] == '\t'){
+		else if (formula[j] == ' ' || formula[j] == '\n' || formula[j] == '\t'){
 			j++;
 		}
-	}while (input[j] != '\0');
+	}while (formula[j] != '\0');
 	return token;
 }
 
@@ -65,10 +66,9 @@ void free_token(char** token)
 {
 	int i;
 	for(i = 0; token[i] != NULL; i++){
-		if(i == 37){
-			asm("int3");
-		}
 		free(token[i]);
+		token[i] = NULL;
 	}
 	free(token);
+	token = NULL;
 }

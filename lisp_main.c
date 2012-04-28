@@ -5,7 +5,8 @@
 #include <readline/history.h>
 #include "my_lisp.h"
 
-int execute(char *input);
+int cut(char *input);
+void execute(char *formula);
 
 #define STRSIZE 128
 
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
 	read_history(".my_history");
 	if (argc == 1){
 		input = input_formula();
-		quit = execute(input);
+		cut(input);
 		free(input);
 	}
 	else if (argc == 2){
@@ -36,13 +37,14 @@ int main(int argc, char *argv[])
 			}
 			input = str;
 			printf("%s",input);
-			execute(input);
+			cut(input);
 			fclose(fp);
 		}
+		quit = 1;
 	}
 	if (quit == 0){
 		input = input_formula();
-		while (execute(input) == 0){
+		while (cut(input) == 0){
 			free(input);
 			input = input_formula();
 		}
@@ -52,23 +54,59 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int execute(char *input)
+int cut(char*input)
 {
+	int i = 0;
 	int quit = 0;
-	char **token;
-	token = split(input);
-	struct cons_t *tree;
-	tree = cons_cell(token);
-	dump_tree(tree);
-	discriminate(tree);
-	if (strcmp(tree->svalue,"quit") == 0 || strcmp(tree->svalue,"q") == 0){
-		quit = 1;
+
+	while (input[i] != '\0'){
+		char formula[STRSIZE];
+		int R_parentheses = 0;
+		int L_parentheses = 0;
+		int j = 0;
+		while (input[i] != '\0'){
+			formula[j] = input[i];
+			if (input[i] == '('){
+				R_parentheses++;
+			}
+			if (input[i] == ')'){
+				L_parentheses++;
+			}
+			i++; j++;
+			if (R_parentheses != 0 && R_parentheses == L_parentheses){
+				break;
+			}
+		}
+		if (formula[0] == '\0'){
+			break;
+		}
+		formula[j] = '\0';
+		if (R_parentheses == L_parentheses){
+			execute(formula);
+		}
+		else{
+			printf("'%s' is not correct\n",formula);
+		}
+		if(strcmp(formula,"quit") == 0 || strcmp(formula,"q") == 0){
+			quit = 1;
+		}
 	}
-	free_tree(tree);
-	free_token(token);
-	printf("\n");
 	return quit;
 }
+
+void execute(char *formula)
+{
+	char **token;
+	token = split(formula);
+	cons_t *tree;
+	tree = make_tree(token);
+	/* dump_tree(tree); */
+	discriminate(tree);
+	/* free_tree(tree); */
+	/* free_token(token); */
+	printf("\n");
+}
+
 
 
 //--arg

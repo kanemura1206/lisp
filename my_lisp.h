@@ -1,14 +1,4 @@
-char* input_formula();
-char** split(char* input);
-void free_token(char** token);
-void dump_token(char** token);
-struct cons_t* cons_cell(char** token);
-void dump_tree(struct cons_t *work);
-void free_tree(struct cons_t *work);
-void discriminate(struct cons_t *work);
-
-
-struct cons_t{
+typedef struct cons_t{
 	int type;
 	union{
 		struct cons_t *car;
@@ -16,12 +6,22 @@ struct cons_t{
 		char *svalue;
 	};
 	struct cons_t *cdr;
-};
+}cons_t;
 
-struct cell{
+typedef struct cell{
 	char *key;
 	int value;
-};
+}cell;
+
+char* input_formula();
+char** split(char* input);
+void free_token(char** token);
+void dump_token(char** token);
+cons_t* make_tree(char** token);
+void dump_tree(cons_t *work);
+void free_tree(cons_t *work);
+void discriminate(cons_t *work);
+
 
 enum{
 	NUM,

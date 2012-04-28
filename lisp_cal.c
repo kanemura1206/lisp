@@ -10,44 +10,47 @@ static int recursive_tableSIZE = 0;
 static int caldefun_prepare = 0;
 static int recursive_prepare = 0;
 static int recursive_point = 0;
-static struct cell **table;
-static struct cons_t **function;
-static struct cell **recursive_table;
+static cell **table;
+static cons_t **function;
+static cell **recursive_table;
 
 
-float calcular(struct cons_t *work);
-float caladd(struct cons_t *work);
-float calsub(struct cons_t *work);
-float calmul(struct cons_t *work);
-float caldiv(struct cons_t *work);
-float calcom_r(struct cons_t *work);
-float calcom_l(struct cons_t *work);
-float branch(struct cons_t *work);
-float calif(struct cons_t *work);
-void calsetq(struct cons_t *work);
-float value_of(struct cons_t *work);
-int check_tree(struct cons_t *work);
-int search_cha(struct cons_t *work);
-void caldefun(struct cons_t *work);
-int search_function(struct cons_t *work);
-float call_function(struct cons_t *work,int i);
-void function_setq(struct cons_t *work,struct cons_t *variable);
-int check_recursive(struct cons_t *work,char *func);
-void recursive_setq(struct cons_t *work,struct cons_t *variable);
+float calcular(cons_t *work);
+float caladd(cons_t *work);
+float calsub(cons_t *work);
+float calmul(cons_t *work);
+float caldiv(cons_t *work);
+float calcom_R(cons_t *work);
+float calcom_L(cons_t *work);
+float branch(cons_t *work);
+float calif(cons_t *work);
+void calsetq(cons_t *work);
+float value_of(cons_t *work);
+int check_tree(cons_t *work);
+int search_cha(cons_t *work);
+void caldefun(cons_t *work);
+int search_function(cons_t *work);
+float call_function(cons_t *work,int i);
+void function_setq(cons_t *work,cons_t *variable);
+int check_recursive(cons_t *work,char *func);
+void recursive_setq(cons_t *work,cons_t *variable);
 void free_table();
-void free_function(struct cons_t *work);
+void free_function(cons_t *work);
 
 
-void discriminate(struct cons_t *work)
+void discriminate(cons_t *work)
 {
+	if(work == NULL){
+		return;
+	}
 	static int static_value;
 	if (static_value == 0){
-		table = calloc(32,sizeof(struct cell*));
-		struct cell *p = (struct cell*)calloc(1,sizeof(struct cell));
+		table = calloc(32,sizeof(cell*));
+		cell *p = (cell*)calloc(1,sizeof(cell));
 		p->key = "T"; p->value = 1;
 		table[0] = p;
-		struct cell *q = (struct cell*)calloc(1,sizeof(struct cell));
-	    q->key = "Nil"; q->value = 0;
+		cell *q = (cell*)calloc(1,sizeof(cell));
+		q->key = "Nil"; q->value = 0;
 		table[1] = q;
 		static_value = 1;
 	}
@@ -86,7 +89,7 @@ void discriminate(struct cons_t *work)
 	}
 }
 
-float calcular(struct cons_t *work)
+float calcular(cons_t *work)
 {
 	if(work->type == CHA){
 		if (strcmp(work->svalue,"+") == 0){
@@ -102,10 +105,10 @@ float calcular(struct cons_t *work)
 			return caldiv(work->cdr);
 		}
 		else if (strcmp(work->svalue,"<") == 0){
-			return calcom_r(work->cdr);
+			return calcom_R(work->cdr);
 		}
 		else if (strcmp(work->svalue,">") == 0){
-			return calcom_l(work->cdr);
+			return calcom_L(work->cdr);
 		}
 		else if (strcmp(work->svalue,"if") == 0){
 			return calif(work->cdr);
@@ -123,7 +126,7 @@ float calcular(struct cons_t *work)
 	}
 }
 
-float caladd(struct cons_t *work)
+float caladd(cons_t *work)
 {
 	if(work->cdr != NULL){
 		return branch(work) + caladd(work->cdr);
@@ -133,7 +136,7 @@ float caladd(struct cons_t *work)
 	}
 }
 
-float calsub(struct cons_t *work)
+float calsub(cons_t *work)
 {
 	if(work->cdr != NULL){
 		return branch(work) - calsub(work->cdr);
@@ -143,7 +146,7 @@ float calsub(struct cons_t *work)
 	}
 }
 
-float calmul(struct cons_t *work)
+float calmul(cons_t *work)
 {
 	if(work->cdr != NULL){
 		return branch(work) * calmul(work->cdr);
@@ -153,7 +156,7 @@ float calmul(struct cons_t *work)
 	}
 }
 
-float caldiv(struct cons_t *work)
+float caldiv(cons_t *work)
 {
 	if(work->cdr != NULL){
 		return branch(work) / caldiv(work->cdr);
@@ -163,11 +166,11 @@ float caldiv(struct cons_t *work)
 	}
 }
 
-float calcom_r(struct cons_t *work)
+float calcom_R(cons_t *work)
 {
 	if (work->cdr != NULL){
 		if (branch(work) < branch(work->cdr)){
-			return calcom_r(work->cdr);
+			return calcom_R(work->cdr);
 		}
 		else{
 			return 0;
@@ -178,11 +181,11 @@ float calcom_r(struct cons_t *work)
 	}
 }
 
-float calcom_l(struct cons_t *work)
+float calcom_L(cons_t *work)
 {
 	if (work->cdr != NULL){
 		if (branch(work) > branch(work->cdr)){
-			return calcom_l(work->cdr);
+			return calcom_L(work->cdr);
 		}
 		else{
 			return 0;
@@ -193,7 +196,7 @@ float calcom_l(struct cons_t *work)
 	}
 }
 
-float branch(struct cons_t *work)
+float branch(cons_t *work)
 {
 	if (work->type == CAR){
 		return calcular(work->car);
@@ -203,7 +206,7 @@ float branch(struct cons_t *work)
 	}
 } 
 
-float calif(struct cons_t *work)
+float calif(cons_t *work)
 {
 	if (branch(work) == 1){
 		return branch(work->cdr);
@@ -213,7 +216,7 @@ float calif(struct cons_t *work)
 	}
 }
 
-void calsetq(struct cons_t *work)
+void calsetq(cons_t *work)
 {
 	int i = 0;
 	int j;
@@ -230,14 +233,14 @@ void calsetq(struct cons_t *work)
 		tableSIZE++;
 	}
 	int len = strlen(work->svalue);
-	struct cell *tmp = (struct cell*)calloc(1,sizeof(struct cell));
+	cell *tmp = (cell*)calloc(1,sizeof(cell));
 	tmp->key = malloc(sizeof(char)*(len+1));
 	strcpy(tmp->key,work->svalue);
 	tmp->value = branch(work->cdr);
 	table[j] = tmp;
 }
 
-float value_of(struct cons_t *work)
+float value_of(cons_t *work)
 {
 	if (work->type == CHA){
 		int i = 0;
@@ -262,7 +265,7 @@ float value_of(struct cons_t *work)
 	}
 }
 
-int check_tree(struct cons_t *work)
+int check_tree(cons_t *work)
 {
 	if (work->type != CAR){
 		if(work->cdr != NULL){
@@ -282,7 +285,7 @@ int check_tree(struct cons_t *work)
 	}
 }
 
-int search_cha(struct cons_t *work)
+int search_cha(cons_t *work)
 {
 	if(work->type == CHA){
 		if(strcmp(work->svalue,"+") != 0 && strcmp(work->svalue,"-") != 0 && strcmp(work->svalue,"*") != 0 && 
@@ -313,13 +316,13 @@ int search_cha(struct cons_t *work)
 	}
 }
 
-void caldefun(struct cons_t *work)
+void caldefun(cons_t *work)
 {
 	if (caldefun_prepare == 0){
-		function = calloc(1,sizeof(struct cons_t*));
+		function = calloc(1,sizeof(cons_t*));
 		caldefun_prepare = 1;
 	}
-	function[funcnumber] = calloc(1,sizeof(struct cons_t));
+	function[funcnumber] = calloc(1,sizeof(cons_t));
 	function[funcnumber] = work->cdr;
 	work->cdr = NULL;
 	if(check_recursive(function[funcnumber]->cdr,function[funcnumber]->svalue) != 0){
@@ -328,7 +331,7 @@ void caldefun(struct cons_t *work)
 	funcnumber++;
 }
 
-int search_function(struct cons_t *work)
+int search_function(cons_t *work)
 {
 	if (function != NULL){
 		int i = 0;
@@ -342,9 +345,9 @@ int search_function(struct cons_t *work)
 	return -1;
 }
 
-float call_function(struct cons_t *work,int i)
+float call_function(cons_t *work,int i)
 {
-	struct cons_t *variable;
+	cons_t *variable;
 	variable = function[i]->cdr->car;
 	if (function[i]->type == RECURSIVE){
 		recursive_setq(work,variable);
@@ -355,7 +358,7 @@ float call_function(struct cons_t *work,int i)
 	float f =  calcular(function[i]->cdr->cdr->car);
 	if (function[i]->type == RECURSIVE){
 		int k = 0;
-		struct cons_t *tmp;
+		cons_t *tmp;
 		tmp = function[i]->cdr->car;
 		int j = recursive_tableSIZE;
 		while(tmp->cdr != NULL){
@@ -368,7 +371,7 @@ float call_function(struct cons_t *work,int i)
 	return f;
 }
 
-void function_setq(struct cons_t *work,struct cons_t *variable)
+void function_setq(cons_t *work,cons_t *variable)
 {
 	int i = 0;
 	int j;
@@ -385,7 +388,7 @@ void function_setq(struct cons_t *work,struct cons_t *variable)
 		tableSIZE++;
 	}
 	int len = strlen(variable->svalue);
-	struct cell *tmp = (struct cell*)calloc(1,sizeof(struct cell));
+	cell *tmp = (cell*)calloc(1,sizeof(cell));
 	tmp->key = malloc(sizeof(char)*(len+1));
 	strcpy(tmp->key,variable->svalue);
 	tmp->value = branch(work);
@@ -395,7 +398,7 @@ void function_setq(struct cons_t *work,struct cons_t *variable)
 	}
 }
 
-int check_recursive(struct cons_t *work,char *func)
+int check_recursive(cons_t *work,char *func)
 {
 	int i = 0;
 	if (work->type == CHA){
@@ -421,14 +424,14 @@ int check_recursive(struct cons_t *work,char *func)
 	}
 }
 
-void recursive_setq(struct cons_t *work,struct cons_t *variable)
+void recursive_setq(cons_t *work,cons_t *variable)
 {
 	if (recursive_prepare == 0){
-		recursive_table = calloc(126,sizeof(struct cell*));
+		recursive_table = calloc(126,sizeof(cell*));
 		recursive_prepare = 1;
 	}
 	int len = strlen(variable->svalue);
-	struct cell *tmp = (struct cell*)calloc(1,sizeof(struct cell));
+	cell *tmp = (cell*)calloc(1,sizeof(cell));
 	tmp->key = malloc(sizeof(char)*(len+1));
 	strcpy(tmp->key,variable->svalue);
 	tmp->value = branch(work);
@@ -444,18 +447,22 @@ void free_table()
 	int i;
 	for(i = 0; i < tableSIZE; i++){
 		free(table[i]);
+		table[i] = NULL;
 	}
 	free(table);
+	table = NULL;
 
 	if(recursive_prepare == 1){
 		for(i = 0; recursive_table[i] != NULL; i++){
 			free(recursive_table[i]);
+			recursive_table[i] = NULL;
 		}
 		free(recursive_table);
+		recursive_table = NULL;
 	}
 }
 
-void free_function(struct cons_t *work)
+void free_function(cons_t *work)
 {
 	if (work->type == CAR){
 		free_function(work->car);
@@ -463,7 +470,10 @@ void free_function(struct cons_t *work)
 	if (work->cdr != NULL){
 		free_function(work->cdr);
 	}
-	else if (work->cdr == NULL){
-		free(work);
+	if (work->type == CHA || work->type == RECURSIVE){
+		free(work->svalue);
+		work->svalue = NULL;
 	}
+	free(work);
+	work = NULL;
 }

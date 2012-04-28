@@ -5,6 +5,6 @@ project(lisp)
 set(CMAKE_C_FLAGS_DEBAG "-O0 -g3")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
 
-add_executable(lisp lisp_main.c lisp_token.c lisp_cons_cell.c lisp_cal.c)
+add_executable(lisp lisp_main.c lisp_token.c lisp_tree.c lisp_cal.c)
 
 target_link_libraries(lisp readline) 
