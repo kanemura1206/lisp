@@ -50,6 +50,9 @@ int main(int argc, char *argv[])
 		}
 		free(input);
 	}
+	free_table();
+	free_function();
+	free_recursive();
 	clear_history();
 	return 0;
 }
@@ -102,8 +105,8 @@ void execute(char *formula)
 	tree = make_tree(token);
 	/* dump_tree(tree); */
 	discriminate(tree);
-	/* free_tree(tree); */
-	/* free_token(token); */
+	free_tree(tree);
+	free_token(token);
 	printf("\n");
 }
 

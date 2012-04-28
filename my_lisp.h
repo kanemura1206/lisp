@@ -21,6 +21,8 @@ cons_t* make_tree(char** token);
 void dump_tree(cons_t *work);
 void free_tree(cons_t *work);
 void discriminate(cons_t *work);
+void free_table();
+void free_function();
 
 
 enum{

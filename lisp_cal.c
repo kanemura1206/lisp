@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "my_lisp.h"
 
+#define function_SIZE 32
+
 
 static int tableSIZE = 2;
 static int funcnumber = 0;
@@ -59,13 +61,7 @@ void discriminate(cons_t *work)
 		calsetq(work->cdr);
 	}
 	else if (strcmp(work->svalue,"quit") == 0 || strcmp(work->svalue,"q") == 0){
-		free_table();
-		int i;
-		if (caldefun_prepare == 1){
-			for(i = 0; function[i] != NULL; i++){
-				free_function(function[i]);
-			}
-		}
+		return;
 	}
 	else if (strcmp(work->svalue,"defun") == 0){
 		caldefun(work);
@@ -319,10 +315,9 @@ int search_cha(cons_t *work)
 void caldefun(cons_t *work)
 {
 	if (caldefun_prepare == 0){
-		function = calloc(1,sizeof(cons_t*));
+		function = calloc(function_SIZE,sizeof(cons_t*));
 		caldefun_prepare = 1;
 	}
-	function[funcnumber] = calloc(1,sizeof(cons_t));
 	function[funcnumber] = work->cdr;
 	work->cdr = NULL;
 	if(check_recursive(function[funcnumber]->cdr,function[funcnumber]->svalue) != 0){
@@ -364,8 +359,16 @@ float call_function(cons_t *work,int i)
 		while(tmp->cdr != NULL){
 			j--;
 			tmp = tmp->cdr;
+			free(recursive_table[j]->key);
+			recursive_table[j]->key = NULL;
+			free(recursive_table[j]);
+			recursive_table[j] = NULL;
 		}
 		j--;
+		free(recursive_table[j]->key);
+		recursive_table[j]->key = NULL;
+		free(recursive_table[j]);
+		recursive_table[j] = NULL;
 		recursive_tableSIZE = j;
 	}
 	return f;
@@ -464,16 +467,21 @@ void free_table()
 
 void free_function(cons_t *work)
 {
-	if (work->type == CAR){
-		free_function(work->car);
+	if (caldefun_prepare == 0){
+		return;
 	}
-	if (work->cdr != NULL){
-		free_function(work->cdr);
+	int i;
+	for (i = 0; function[i] != NULL; i++){
+		free_tree(function[i]);
 	}
-	if (work->type == CHA || work->type == RECURSIVE){
-		free(work->svalue);
-		work->svalue = NULL;
+	free(function);
+	function = NULL;
+}
+
+void free_recursive()
+{
+	if (recursive_prepare == 1){
+		free(recursive_table);
+		recursive_table = NULL;
 	}
-	free(work);
-	work = NULL;
 }

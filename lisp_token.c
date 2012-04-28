@@ -64,6 +64,9 @@ void dump_token(char** token){
 
 void free_token(char** token)
 {
+	if (token == NULL){
+		return;
+	}
 	int i;
 	for(i = 0; token[i] != NULL; i++){
 		free(token[i]);
