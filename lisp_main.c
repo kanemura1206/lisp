@@ -50,9 +50,7 @@ int main(int argc, char *argv[])
 		}
 		free(input);
 	}
-	free_table();
 	free_function();
-	free_recursive();
 	clear_history();
 	return 0;
 }

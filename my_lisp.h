@@ -14,7 +14,6 @@ typedef struct cell{
 }cell;
 
 typedef struct func_t{
-	int type;
 	char *func_name;
 	int arg_SIZE;
 	cons_t *tree;
@@ -25,10 +24,9 @@ char** split(char* input);
 void free_token(char** token);
 void dump_token(char** token);
 cons_t* make_tree(char** token);
-void dump_tree(cons_t *work);
-void free_tree(cons_t *work);
-void discriminate(cons_t *work);
-void free_table();
+void dump_tree(cons_t* work);
+void free_tree(cons_t* work);
+void discriminate(cons_t* work);
 void free_function();
 
 
@@ -36,5 +34,6 @@ enum{
 	NUM,
 	CHA,
 	CAR,
+	ARG,
 	RECURSIVE
 };

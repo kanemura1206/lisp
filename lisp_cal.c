@@ -3,20 +3,20 @@
 #include <stdlib.h>
 #include "my_lisp.h"
 
-#define function_SIZE 32
-#define recursive_tableSIZE 64
+#define MAX 64
 
 static int tableSIZE = 2;
-static int funcnumber = 0;
-static int recursive_tablePOINT = 0;
+static int arg_tableSIZE = 0;
+static int func_number;
+static int func_SIZE = 0;
 static int caldefun_prepare = 0;
 static int recursive_prepare = 0;
 static cell **table;
 static func_t **function;
-static int  **recursive_table[recursive_tableSIZE];
-static int arg[function_SIZE];
+static int arg_table[MAX];
+static int arg[MAX];
 
-int calcular(cons_t *work);
+int calculate(cons_t *work);
 int caladd(cons_t *work);
 int calsub(cons_t *work);
 int calmul(cons_t *work);
@@ -28,13 +28,13 @@ int calif(cons_t *work);
 void calsetq(cons_t *work);
 int value_of(cons_t *work);
 int check_tree(cons_t *work);
-int search_cha(char *svalue);
+int search_cha(cons_t *work);
 void caldefun(cons_t *work);
+void rewrite_function(cons_t *work,cons_t *variable);
 int search_function(cons_t *work);
 int call_function(cons_t *work,int i);
-void function_setq(cons_t *work);
+void arg_setq(cons_t *work,int i);
 int check_recursive(cons_t *work,char *func);
-void recursive_setq(cons_t *work,cons_t *variable);
 void free_table();
 void free_function(cons_t *work);
 
@@ -66,11 +66,11 @@ void discriminate(cons_t *work)
 		caldefun(work->cdr);
 	}
 	else if (search_function(work) != -1){
-		printf("= %f\n",calcular(work));
+		printf("= %f\n",calculate(work));
 	}
 	else if (check_tree(work) == 0){
 		if (strcmp(work->svalue,"<") ==0 || strcmp(work->svalue,">") == 0){
-			int k = calcular(work);
+			int k = calculate(work);
 			if(k == 1){
 				printf("T\n");
 			}
@@ -79,12 +79,12 @@ void discriminate(cons_t *work)
 			}
 		}
 		else{
-			printf("= %f\n",calcular(work));
+			printf("= %f\n",calculate(work));
 		}
 	}
 }
 
-int calcular(cons_t *work)
+int calculate(cons_t *work)
 {
 	if(work->type == CHA){
 		if (strcmp(work->svalue,"+") == 0){
@@ -109,8 +109,8 @@ int calcular(cons_t *work)
 			return calif(work->cdr);
 		}
 		else if (search_function(work) != -1){
-			int i = search_function(work);
-			return call_function(work->cdr,i);
+			func_number = search_function(work);
+			return call_function(work->cdr,func_number);
 		}
 		else{
 			return value_of(work);
@@ -194,10 +194,10 @@ int calcom_L(cons_t *work)
 int branch(cons_t *work)
 {
 	if (work->type == CAR){
-		return calcular(work->car);
+		return calculate(work->car);
 	}
 	else{
-		return calcular(work);
+		return calculate(work);
 	}
 } 
 
@@ -245,15 +245,9 @@ int value_of(cons_t *work)
 			}
 			i++;
 		}while (i < tableSIZE);
-		int j = recursive_tablePOINT;
-		do{
-			j--;
-			if (recursive_table[j] != NULL){
-				if (strcmp(recursive_table[j]->key,work->svalue) == 0){
-					return recursive_table[j]->value;
-				}
-			}
-		}while (j > 0);
+	}
+	else if (work->type == ARG){
+		return arg_table[arg_tableSIZE - work->ivalue];
 	}
 	else{
 		return work->ivalue;
@@ -264,10 +258,10 @@ int check_tree(cons_t *work)
 {
 	if (work->type != CAR){
 		if(work->cdr != NULL){
-			return search_cha(work->svalue) + check_tree(work->cdr);
+			return search_cha(work) + check_tree(work->cdr);
 		}
 		else if (work->cdr == NULL){
-			return search_cha(work->svalue);
+			return search_cha(work);
 		}
 	}
 	else if (work->type == CAR){
@@ -280,7 +274,7 @@ int check_tree(cons_t *work)
 	}
 }
 
-int search_cha(char *svalue)
+int search_cha(cons_t *work)
 {
 	if(work->type == CHA){
 		if(strcmp(work->svalue,"+") != 0 && strcmp(work->svalue,"-") != 0 && strcmp(work->svalue,"*") != 0 && 
@@ -288,17 +282,17 @@ int search_cha(char *svalue)
 		   strcmp(work->svalue,"if") != 0 && strcmp(work->svalue,"setq") != 0 && strcmp(work->svalue,"defun") != 0){
 			int i; int j = 1;
 			for(i = 0; i < tableSIZE; i++){
-				if(strcmp(table[i]->key,svalue) == 0){
+				if(strcmp(table[i]->key,work->svalue) == 0){
 					j = 0;
 				}
 			}
-			for(i = 0; i < funcnumber; i++){
-				if(strcmp(function[i]->func_name,svalue) == 0){
+			for(i = 0; i < func_SIZE; i++){
+				if(strcmp(function[i]->func_name,work->svalue) == 0){
 					j = 0;
 				}
 			}
 			if(j == 1){
-				printf("'%s' is not exist\n",svalue);
+				printf("'%s' is not exist\n",work->svalue);
 			}
 			return j;
 		}
@@ -314,29 +308,23 @@ int search_cha(char *svalue)
 void caldefun(cons_t *work)
 {
 	if (caldefun_prepare == 0){
-		function = calloc(function_SIZE,sizeof(func_t*));
+		function = calloc(MAX,sizeof(func_t*));
 		caldefun_prepare = 1;
 	}
-	function[funcnumber]->tree = work->cdr->cdr->car;
+	function[func_SIZE]->tree = work->cdr->cdr->car;
 	work->cdr->cdr->car = NULL;
 	cons_t *variable = work->cdr->car;
 	cons_t *tmp = variable;
-	function[funcnumber]->arg_SIZE = 0;
+	function[func_SIZE]->arg_SIZE = 1;
 	while (tmp->cdr != NULL){
 		tmp = tmp->cdr;
-		function[funcnumber]->arg_SIZE++;
+		function[func_SIZE]->arg_SIZE++;
 	}
-	rewrite_function(function[funcnumber]->tree,variable);
+	rewrite_function(function[func_SIZE]->tree,variable);
 	int len = strlen(work->svalue);
-	function[funcnumber]->func_name = malloc(sizeof(char)*(len+1));
-	strcpy(function[funcnumber]->func_name,work->svalue);
-	if(check_recursive(function[funcnumber]->tree,function[funcnumber]->func_name) != 0){
-		function[funcnumber]->type = RECURSIVE;
-	}
-	else{
-		function[funcnumber]->type = 0;
-	}
-	funcnumber++;
+	function[func_SIZE]->func_name = malloc(sizeof(char)*(len+1));
+	strcpy(function[func_SIZE]->func_name,work->svalue);
+	func_SIZE++;
 }
 
 void rewrite_function(cons_t *work,cons_t *variable)
@@ -351,13 +339,13 @@ void rewrite_function(cons_t *work,cons_t *variable)
 		int i = 0;
 		do{
 			if (strcmp(work->svalue,variable->svalue) == 0){
-				work->type = NUM;
-				work->ivalue = arg[i];
+				work->type = ARG;
+				work->ivalue = i;
 				return;
 			}
 			i++;
-			variable = varaible->cdr;
-		}while(i <= arg_SIZE)
+			variable = variable->cdr;
+		}while(i < function[func_SIZE]->arg_SIZE);
 	}
 }
 
@@ -370,123 +358,30 @@ int search_function(cons_t *work)
 				return i;
 			}
 			i++;
-		}while (i < funcnumber);
+		}while (i < func_SIZE);
 	}
 	return -1;
 }
 
 int call_function(cons_t *work,int i)
 {
-	if (function[i]->type == RECURSIVE){
-		recursive_setq(work);
-	}
-	else{
-		function_setq(work);
-	}
-	int f =  calcular(function[i]->cdr->cdr->car);
-	if (function[i]->type == RECURSIVE){
-		int k = 0;
-		cons_t *tmp;
-		tmp = function[i]->cdr->car;
-		int j = recursive_tablePOINT;
-		while(tmp->cdr != NULL){
-			j--;
-			tmp = tmp->cdr;
-			free(recursive_table[j]->key);
-			recursive_table[j]->key = NULL;
-			free(recursive_table[j]);
-			recursive_table[j] = NULL;
-		}
-		j--;
-		free(recursive_table[j]->key);
-		recursive_table[j]->key = NULL;
-		free(recursive_table[j]);
-		recursive_table[j] = NULL;
-		recursive_tablePOINT = j;
-	}
-	return f;
-}
-
-void function_setq(cons_t *work)
-{
-	int i = 0;
-	int j;
 	int k = 0;
-	do{
-		if(strcmp(table[i]->key,variable->svalue) == 0){
-			k = 1;
-			j = i;
-		}
-		i++;
-	}while (i < tableSIZE);
-	if (k == 0){
-		j = tableSIZE;
-		tableSIZE++;
+	arg_setq(work,0);
+	int result =  calculate(function[func_number]->tree);
+	int j = function[func_number]->arg_SIZE;
+	arg_tableSIZE = arg_tableSIZE - j;
+	while(j > 0){
+		j--;
 	}
-	int len = strlen(variable->svalue);
-	cell *tmp = (cell*)calloc(1,sizeof(cell));
-	tmp->key = malloc(sizeof(char)*(len+1));
-	strcpy(tmp->key,variable->svalue);
-	tmp->value = branch(work);
-	table[j] = tmp;
-	if(work->cdr != NULL){
-		function_setq(work->cdr,variable->cdr);
-	}
+	return result;
 }
 
-int check_recursive(func_t *work,char *func_name)
+void arg_setq(cons_t *work,int i)
 {
-	int i = 0;
-	if (work->type == CHA){
-		if(strcmp(work->svalue,func_name) == 0){
-			i = 1;
-		}
-	}
-	if (work->type != CAR){
-		if(work->cdr != NULL){
-			return i + check_recursive(work->cdr,func_name);
-		}
-		else if (work->cdr == NULL){
-			return i;
-		}
-	}
-	else if (work->type == CAR){
-		if (work->cdr != NULL){
-			return check_recursive(work->car,func_name) + check_recursive(work->cdr,func_name);
-		}
-		else if(work->cdr == NULL){
-			return check_recursive(work->car,func_name);
-		}
-	}
-}
-
-
-void recursive_setq(cons_t *work,cons_t *variable)
-{
-	recursive_table[recursive_tablePOINT] = ;
-	if(work->cdr != NULL){
-		recursive_setq(work->cdr,variable->cdr);
-	}
-	recursive_tablePOINT++;
-}
-
-void free_table()
-{
-	int i;
-	for(i = 0; i < tableSIZE; i++){
-		free(table[i]);
-		table[i] = NULL;
-	}
-	free(table);
-	table = NULL;
-
-	if(recursive_prepare == 1){
-		for(i = 0; recursive_table[i] != NULL; i++){
-			free(recursive_table[i]);
-			recursive_table[i] = NULL;
-		}
-		free(recursive_table);
-		recursive_table = NULL;
+	arg_table[arg_tableSIZE] = value_of(work);
+	arg_tableSIZE++;
+	if (i < function[func_number]->arg_SIZE){
+		arg_setq(work->cdr,i+1);
 	}
 }
 
@@ -497,7 +392,8 @@ void free_function(cons_t *work)
 	}
 	int i;
 	for (i = 0; function[i] != NULL; i++){
-		free_tree(function[i]);
+		free(function[i]->func_name);
+		free_tree(function[i]->tree);
 	}
 	free(function);
 	function = NULL;
