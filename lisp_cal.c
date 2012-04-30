@@ -116,7 +116,7 @@ int calculate(cons_t *work)
 			return value_of(work);
 		}
 	}
-	else if (work->type = ARG){
+	else if (work->type == ARG){
 		return value_of(work);
 	}
 	else{
@@ -250,8 +250,6 @@ int value_of(cons_t *work)
 		}while (i < tableSIZE);
 	}
 	else if (work->type == ARG){
-		printf("arg[%d]\n",work->ivalue);
-		printf("retern:table[%d] = %d\n",arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1),arg_table[arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1)]);
 		return arg_table[arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1)];
 	}
 	else{
@@ -373,16 +371,14 @@ int call_function(cons_t *work,int i)
 {
 	int k = 0;
 	arg_setq(work,0);
-	printf("arg_tableSIZE = %d\n",arg_tableSIZE);
 	int result =  calculate(function[func_number]->tree);
 	arg_tableSIZE = arg_tableSIZE - (function[func_number]->arg_SIZE + 1);
-	printf("arg_tableSIZE = %d\n",arg_tableSIZE);
 	return result;
 }
 
 void arg_setq(cons_t *work,int i)
 {
-	arg_table[arg_tableSIZE] = value_of(work);
+	arg_table[arg_tableSIZE] = branch(work);
 	arg_tableSIZE++;
 	if (i < function[func_number]->arg_SIZE){
 		arg_setq(work->cdr,i+1);
@@ -397,7 +393,11 @@ void free_function(cons_t *work)
 	int i;
 	for (i = 0; function[i] != NULL; i++){
 		free(function[i]->func_name);
+		function[i]->func_name = NULL;
 		free_tree(function[i]->tree);
+		function[i]->tree = NULL;
+		free(function[i]);
+		function[i] = NULL;
 	}
 	free(function);
 	function = NULL;
