@@ -6,7 +6,7 @@
 #include "my_lisp.h"
 
 int cut(char *input);
-void execute(char *formula);
+int execute(char *formula);
 
 #define STRSIZE 128
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	read_history(".my_history");
 	if (argc == 1){
 		input = input_formula();
-		cut(input);
+		quit = cut(input);
 		free(input);
 	}
 	else if (argc == 2){
@@ -83,29 +83,33 @@ int cut(char*input)
 		}
 		formula[j] = '\0';
 		if (R_parentheses == L_parentheses){
-			execute(formula);
+			quit = execute(formula);
 		}
 		else{
 			printf("'%s' is not correct\n",formula);
-		}
-		if(strcmp(formula,"quit") == 0 || strcmp(formula,"q") == 0){
-			quit = 1;
 		}
 	}
 	return quit;
 }
 
-void execute(char *formula)
+int execute(char *formula)
 {
+	int quit = 0;
 	char **token;
 	token = split(formula);
 	cons_t *tree;
 	tree = make_tree(token);
+	if (tree->type == SYMBOL){
+		if (tree->ivalue == QUIT){
+			quit = 1;
+		}
+	}
 	/* dump_tree(tree); */
 	discriminate(tree);
 	free_tree(tree);
 	free_token(token);
 	printf("\n");
+	return quit;
 }
 
 
