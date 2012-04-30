@@ -34,5 +34,20 @@ enum{
 	NUM,
 	CHA,
 	CAR,
-	ARG
+	ARG,
+	SYMBOL
 };
+
+enum{
+	PLUS,
+	MINUS,
+	ASTERISK,
+	SLASH,
+	IF,
+	LESS_THAN_SIGN,
+	GREATER_THAN_SIGN,
+	SETQ,
+	DEFUN,
+	QUIT
+};
+

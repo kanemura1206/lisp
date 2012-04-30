@@ -103,8 +103,8 @@ void execute(char *formula)
 	tree = make_tree(token);
 	/* dump_tree(tree); */
 	discriminate(tree);
-	//free_tree(tree);
-	//free_token(token);
+	free_tree(tree);
+	free_token(token);
 	printf("\n");
 }
 

@@ -38,6 +38,8 @@ int check_recursive(cons_t *work,char *func);
 void free_table();
 void free_function(cons_t *work);
 
+int (*po[])(cons_t*) = {caladd, calsub, calmul, caldiv,
+						calif, calcom_R, calcom_L};
 
 void discriminate(cons_t *work)
 {
@@ -55,27 +57,33 @@ void discriminate(cons_t *work)
 		table[1] = q;
 		static_value = 1;
 	}
-
-	if (strcmp(work->svalue,"setq") == 0){
-		calsetq(work->cdr);
+	if (work->type == SYMBOL){
+		if (work->ivalue == SETQ){
+			calsetq(work->cdr);
+			return;
+		}
+		else if (work->ivalue == DEFUN){
+			caldefun(work->cdr);
+			return;
+		}
+		else if (work->ivalue == QUIT){
+			return;
+		}
 	}
-	else if (strcmp(work->svalue,"quit") == 0 || strcmp(work->svalue,"q") == 0){
-		return;
-	}
-	else if (strcmp(work->svalue,"defun") == 0){
-		caldefun(work->cdr);
-	}
-	else if (search_function(work) != -1){
-		printf("= %d\n",calculate(work));
-	}
-	else if (check_tree(work) == 0){
-		if (strcmp(work->svalue,"<") ==0 || strcmp(work->svalue,">") == 0){
-			int k = calculate(work);
-			if(k == 1){
-				printf("T\n");
+	if (check_tree(work) == 0){
+		if (work->type == SYMBOL){
+			if (work->ivalue == LESS_THAN_SIGN || 
+				work->ivalue == GREATER_THAN_SIGN){
+				int k = calculate(work);
+				if(k == 1){
+					printf("T\n");
+				}
+				else if(k == 0){
+					printf("Nil\n");
+				}
 			}
-			else if(k == 0){
-				printf("Nil\n");
+			else{
+				printf("= %d\n",calculate(work));
 			}
 		}
 		else{
@@ -84,43 +92,23 @@ void discriminate(cons_t *work)
 	}
 }
 
-int calculate(cons_t *work)
-{
-	if (work->type == CHA){
-		if (strcmp(work->svalue,"+") == 0){
-			return caladd(work->cdr);
+
+	int calculate(cons_t *work)
+	{
+		if (work->type == SYMBOL){
+			return (*po[work->ivalue])(work->cdr);
 		}
-		else if (strcmp(work->svalue,"-") == 0){
-			return calsub(work->cdr);
-		}
-		else if (strcmp(work->svalue,"*") == 0){
-			return calmul(work->cdr);
-		}
-		else if (strcmp(work->svalue,"/") == 0){
-			return caldiv(work->cdr);
-		}
-		else if (strcmp(work->svalue,"<") == 0){
-			return calcom_R(work->cdr);
-		}
-		else if (strcmp(work->svalue,">") == 0){
-			return calcom_L(work->cdr);
-		}
-		else if (strcmp(work->svalue,"if") == 0){
-			return calif(work->cdr);
-		}
-		else if (search_function(work) != -1){
-			func_number = search_function(work);
-			return call_function(work->cdr,func_number);
-		}
-		else{
+		else if (work->type == NUM ||  work->type == ARG){
 			return value_of(work);
 		}
-	}
-	else if (work->type == ARG){
-		return value_of(work);
-	}
-	else{
-		return work->ivalue;
+		else if(work->type == CHA){
+			func_number = search_function(work);
+			if (func_number == -1){
+				return value_of(work);
+			}
+			else if (func_number != -1){
+			return call_function(work->cdr,func_number);
+		}
 	}
 }
 
@@ -252,7 +240,7 @@ int value_of(cons_t *work)
 	else if (work->type == ARG){
 		return arg_table[arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1)];
 	}
-	else{
+	else if (work->type == NUM){
 		return work->ivalue;
 	}
 }
@@ -280,28 +268,21 @@ int check_tree(cons_t *work)
 int search_cha(cons_t *work)
 {
 	if(work->type == CHA){
-		if(strcmp(work->svalue,"+") != 0 && strcmp(work->svalue,"-") != 0 && strcmp(work->svalue,"*") != 0 && 
-		   strcmp(work->svalue,"/") != 0 && strcmp(work->svalue,"<") != 0 && strcmp(work->svalue,">") != 0 && 
-		   strcmp(work->svalue,"if") != 0 && strcmp(work->svalue,"setq") != 0 && strcmp(work->svalue,"defun") != 0){
-			int i; int j = 1;
-			for(i = 0; i < tableSIZE; i++){
-				if(strcmp(table[i]->key,work->svalue) == 0){
-					j = 0;
-				}
+		int i; int j = 1;
+		for(i = 0; i < tableSIZE; i++){
+			if(strcmp(table[i]->key,work->svalue) == 0){
+				j = 0;
 			}
-			for(i = 0; i < func_SIZE; i++){
-				if(strcmp(function[i]->func_name,work->svalue) == 0){
-					j = 0;
-				}
-			}
-			if(j == 1){
-				printf("'%s' is not exist\n",work->svalue);
-			}
-			return j;
 		}
-		else{
-			return 0;
+		for(i = 0; i < func_SIZE; i++){
+			if(strcmp(function[i]->func_name,work->svalue) == 0){
+				j = 0;
+			}
 		}
+		if(j == 1){
+			printf("'%s' is not exist\n",work->svalue);
+		}
+		return j;
 	}
 	else{
 		return 0;
