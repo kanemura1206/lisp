@@ -34,6 +34,5 @@ enum{
 	NUM,
 	CHA,
 	CAR,
-	ARG,
-	RECURSIVE
+	ARG
 };

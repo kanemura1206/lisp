@@ -66,7 +66,7 @@ void discriminate(cons_t *work)
 		caldefun(work->cdr);
 	}
 	else if (search_function(work) != -1){
-		printf("= %f\n",calculate(work));
+		printf("= %d\n",calculate(work));
 	}
 	else if (check_tree(work) == 0){
 		if (strcmp(work->svalue,"<") ==0 || strcmp(work->svalue,">") == 0){
@@ -79,14 +79,14 @@ void discriminate(cons_t *work)
 			}
 		}
 		else{
-			printf("= %f\n",calculate(work));
+			printf("= %d\n",calculate(work));
 		}
 	}
 }
 
 int calculate(cons_t *work)
 {
-	if(work->type == CHA){
+	if (work->type == CHA){
 		if (strcmp(work->svalue,"+") == 0){
 			return caladd(work->cdr);
 		}
@@ -115,6 +115,9 @@ int calculate(cons_t *work)
 		else{
 			return value_of(work);
 		}
+	}
+	else if (work->type = ARG){
+		return value_of(work);
 	}
 	else{
 		return work->ivalue;
@@ -247,7 +250,9 @@ int value_of(cons_t *work)
 		}while (i < tableSIZE);
 	}
 	else if (work->type == ARG){
-		return arg_table[arg_tableSIZE - work->ivalue];
+		printf("arg[%d]\n",work->ivalue);
+		printf("retern:table[%d] = %d\n",arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1),arg_table[arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1)]);
+		return arg_table[arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1)];
 	}
 	else{
 		return work->ivalue;
@@ -311,11 +316,12 @@ void caldefun(cons_t *work)
 		function = calloc(MAX,sizeof(func_t*));
 		caldefun_prepare = 1;
 	}
+	function[func_SIZE] = calloc(1,sizeof(func_t));
 	function[func_SIZE]->tree = work->cdr->cdr->car;
 	work->cdr->cdr->car = NULL;
 	cons_t *variable = work->cdr->car;
 	cons_t *tmp = variable;
-	function[func_SIZE]->arg_SIZE = 1;
+	function[func_SIZE]->arg_SIZE = 0;
 	while (tmp->cdr != NULL){
 		tmp = tmp->cdr;
 		function[func_SIZE]->arg_SIZE++;
@@ -345,7 +351,7 @@ void rewrite_function(cons_t *work,cons_t *variable)
 			}
 			i++;
 			variable = variable->cdr;
-		}while(i < function[func_SIZE]->arg_SIZE);
+		}while(i < function[func_SIZE]->arg_SIZE + 1);
 	}
 }
 
@@ -367,12 +373,10 @@ int call_function(cons_t *work,int i)
 {
 	int k = 0;
 	arg_setq(work,0);
+	printf("arg_tableSIZE = %d\n",arg_tableSIZE);
 	int result =  calculate(function[func_number]->tree);
-	int j = function[func_number]->arg_SIZE;
-	arg_tableSIZE = arg_tableSIZE - j;
-	while(j > 0){
-		j--;
-	}
+	arg_tableSIZE = arg_tableSIZE - (function[func_number]->arg_SIZE + 1);
+	printf("arg_tableSIZE = %d\n",arg_tableSIZE);
 	return result;
 }
 
