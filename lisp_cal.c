@@ -10,11 +10,9 @@ static int arg_tableSIZE = 0;
 static int func_number;
 static int func_SIZE = 0;
 static int caldefun_prepare = 0;
-static int recursive_prepare = 0;
 static cell **table;
 static func_t **function;
 static int arg_table[MAX];
-static int arg[MAX];
 
 int calculate(cons_t *work);
 int caladd(cons_t *work);
@@ -36,7 +34,7 @@ int call_function(cons_t *work,int i);
 void arg_setq(cons_t *work,int i);
 int check_recursive(cons_t *work,char *func);
 void free_table();
-void free_function(cons_t *work);
+void free_function();
 
 int (*po[])(cons_t*) = {caladd, calsub, calmul, caldiv,
 						calif, calcom_R, calcom_L};
@@ -48,7 +46,7 @@ void discriminate(cons_t *work)
 	}
 	static int static_value;
 	if (static_value == 0){
-		table = calloc(32,sizeof(cell*));
+		table = calloc(MAX,sizeof(cell*));
 		cell *p = (cell*)calloc(1,sizeof(cell));
 		p->key = "T"; p->value = 1;
 		table[0] = p;
@@ -93,20 +91,20 @@ void discriminate(cons_t *work)
 }
 
 
-	int calculate(cons_t *work)
-	{
-		if (work->type == SYMBOL){
-			return (*po[work->ivalue])(work->cdr);
-		}
-		else if (work->type == NUM ||  work->type == ARG){
+int calculate(cons_t *work)
+{
+	if (work->type == SYMBOL){
+		return (*po[work->ivalue])(work->cdr);
+	}
+	else if (work->type == NUM ||  work->type == ARG){
+		return value_of(work);
+	}
+	else{
+		func_number = search_function(work);
+		if (func_number == -1){
 			return value_of(work);
 		}
-		else if(work->type == CHA){
-			func_number = search_function(work);
-			if (func_number == -1){
-				return value_of(work);
-			}
-			else if (func_number != -1){
+		else{
 			return call_function(work->cdr,func_number);
 		}
 	}
@@ -117,7 +115,7 @@ int caladd(cons_t *work)
 	if(work->cdr != NULL){
 		return branch(work) + caladd(work->cdr);
 	}
-	else if(work->cdr == NULL){
+	else{
 		return branch(work);
 	}
 }
@@ -127,7 +125,7 @@ int calsub(cons_t *work)
 	if(work->cdr != NULL){
 		return branch(work) - calsub(work->cdr);
 	}
-	else if(work->cdr == NULL){
+	else{
 		return branch(work);
 	}
 }
@@ -137,7 +135,7 @@ int calmul(cons_t *work)
 	if(work->cdr != NULL){
 		return branch(work) * calmul(work->cdr);
 	}
-	else if(work->cdr == NULL){
+	else{
 		return branch(work);
 	}
 }
@@ -147,7 +145,7 @@ int caldiv(cons_t *work)
 	if(work->cdr != NULL){
 		return branch(work) / caldiv(work->cdr);
 	}
-	else if(work->cdr == NULL){
+	else{
 		return branch(work);
 	}
 }
@@ -162,7 +160,7 @@ int calcom_R(cons_t *work)
 			return 0;
 		}
 	}
-	else if (work->cdr == NULL){
+	else{
 		return 1;
 	}
 }
@@ -177,7 +175,7 @@ int calcom_L(cons_t *work)
 			return 0;
 		}
 	}
-	else if (work->cdr == NULL){
+	else{
  		return 1;
 	}
 }
@@ -197,7 +195,7 @@ int calif(cons_t *work)
 	if (branch(work) == 1){
 		return branch(work->cdr);
 	}
-	else if (branch(work) == 0){
+	else{
 		return branch(work->cdr->cdr);
 	}
 }
@@ -205,7 +203,7 @@ int calif(cons_t *work)
 void calsetq(cons_t *work)
 {
 	int i = 0;
-	int j;
+	int j = 0;
 	int k = 0;
 	do{
 		if(strcmp(table[i]->key,work->svalue) == 0){
@@ -232,15 +230,16 @@ int value_of(cons_t *work)
 		int i = 0;
 		do{
 			if (strcmp(table[i]->key,work->svalue) == 0){
-				return table[i]->value;
+				break;
 			}
 			i++;
 		}while (i < tableSIZE);
+		return table[i] ->value;
 	}
 	else if (work->type == ARG){
 		return arg_table[arg_tableSIZE - (function[func_number]->arg_SIZE - work->ivalue + 1)];
 	}
-	else if (work->type == NUM){
+	else{
 		return work->ivalue;
 	}
 }
@@ -251,15 +250,15 @@ int check_tree(cons_t *work)
 		if(work->cdr != NULL){
 			return search_cha(work) + check_tree(work->cdr);
 		}
-		else if (work->cdr == NULL){
+		else{
 			return search_cha(work);
 		}
 	}
-	else if (work->type == CAR){
+	else{
 		if (work->cdr != NULL){
 			return check_tree(work->car) + check_tree(work->cdr);
 		}
-		else if(work->cdr == NULL){
+		else{
 			return check_tree(work->car);
 		}
 	}
@@ -324,6 +323,8 @@ void rewrite_function(cons_t *work,cons_t *variable)
 		int i = 0;
 		do{
 			if (strcmp(work->svalue,variable->svalue) == 0){
+				free(work->svalue);
+				work->svalue = NULL;
 				work->type = ARG;
 				work->ivalue = i;
 				return;
@@ -350,7 +351,6 @@ int search_function(cons_t *work)
 
 int call_function(cons_t *work,int i)
 {
-	int k = 0;
 	arg_setq(work,0);
 	int result =  calculate(function[func_number]->tree);
 	arg_tableSIZE = arg_tableSIZE - (function[func_number]->arg_SIZE + 1);
@@ -366,7 +366,7 @@ void arg_setq(cons_t *work,int i)
 	}
 }
 
-void free_function(cons_t *work)
+void free_function()
 {
 	if (caldefun_prepare == 0){
 		return;

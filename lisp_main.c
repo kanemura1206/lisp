@@ -99,12 +99,13 @@ int execute(char *formula)
 	token = split(formula);
 	cons_t *tree;
 	tree = make_tree(token);
-	if (tree->type == SYMBOL){
-		if (tree->ivalue == QUIT){
-			quit = 1;
+	if(tree != NULL){
+		if (tree->type == SYMBOL){
+			if (tree->ivalue == QUIT){
+				quit = 1;
+			}
 		}
 	}
-	/* dump_tree(tree); */
 	discriminate(tree);
 	free_tree(tree);
 	free_token(token);
