@@ -84,11 +84,11 @@ void discriminate(cons_t *work)
 				}
 			}
 			else {
-				printf("= %d\n\n",calculate(work));
+				printf("%d\n\n",calculate(work));
 			}
 		}
 		else {
-			printf("= %d\n\n",calculate(work));
+			printf("%d\n\n",calculate(work));
 		}
 	}
 }

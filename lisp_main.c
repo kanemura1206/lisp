@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 				i++;
 			}
 			input[i] = '\0';
-			printf("%s",input);
+			/* printf("%s",input); */
 			cut(input);
 			fclose(fp);
 		}
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	}
 	free_function();
 	clear_history();
-	printf("Bye.( '_')/~\n\n");
+	/* printf("Bye.( '_')/~\n\n"); */
 	return 0;
 }
 
