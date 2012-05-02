@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
 typedef struct cons_t{
 	int type;
 	union{
@@ -29,7 +35,6 @@ void free_tree(cons_t* work);
 void discriminate(cons_t* work);
 void free_function();
 
-
 enum{
 	NUM,
 	CHA,
@@ -45,7 +50,9 @@ enum{
 	SLASH,
 	IF,
 	LESS_THAN_SIGN,
+	LESS_THAN_OR_EQUAL_TO,
 	GREATER_THAN_SIGN,
+	GREATER_THAN_EQUAL_TO,
 	SETQ,
 	DEFUN,
 	QUIT

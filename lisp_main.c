@@ -1,107 +1,104 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 #include "my_lisp.h"
 
 int cut(char *input);
 int execute(char *formula);
 
-#define STRSIZE 128
 
 int main(int argc, char *argv[])
 {
 	int quit = 0;
 	char *input;
 	using_history();
-	read_history(".my_history");
-	if (argc == 1){
+	if (argc == 1) {
 		input = input_formula();
 		quit = cut(input);
-		free(input);
 	}
-	else if (argc == 2){
-		char str[STRSIZE];
+	else if (argc == 2) {
 		FILE *fp;
-		if ((fp=fopen(argv[1],"r")) == NULL) {
+		if ((fp = fopen(argv[1],"r")) == NULL) {
 			printf("Can't Open File\n\n");
 			return -1;
 		}
 		else {
-			/* // TODO fix strsize. is STRSIZE too small!? */
-			fgets(str,STRSIZE,fp);
-			char tmp[STRSIZE];
-			while(fgets(tmp,STRSIZE,fp) != NULL){
-				strcat(str,tmp);
+			int filelen;
+			fseek(fp,0,SEEK_END);
+			filelen = ftell(fp);
+			fseek(fp,0,SEEK_SET);
+			char *input = (char *)calloc(filelen + 1, sizeof(char));
+			int i = 0;
+			while ( (input[i] = fgetc(fp)) != EOF) {
+				i++;
 			}
-			input = str;
+			input[i] = '\0';
 			printf("%s",input);
 			cut(input);
 			fclose(fp);
 		}
 		quit = 1;
 	}
-	if (quit == 0){
+	if (quit == 0) {
 		input = input_formula();
-		while (cut(input) == 0){
-			free(input);
+		while (cut(input) == 0) {
 			input = input_formula();
 		}
-		free(input);
 	}
 	free_function();
 	clear_history();
+	printf("Bye.( '_')/~\n\n");
 	return 0;
 }
 
-int cut(char*input)
+int cut(char *input)
 {
+	int len = strlen(input);
 	int i = 0;
 	int quit = 0;
 
-	while (input[i] != '\0'){
-		char formula[STRSIZE];
+	while (input[i] != '\0') {
+		char *formula = (char*)calloc(len + 1, sizeof(char));;
 		int R_parentheses = 0;
 		int L_parentheses = 0;
 		int j = 0;
-		while (input[i] != '\0'){
+		while (input[i] != '\0') {
 			formula[j] = input[i];
-			if (input[i] == '('){
+			if (input[i] == '(') {
 				R_parentheses++;
 			}
-			if (input[i] == ')'){
+			if (input[i] == ')') {
 				L_parentheses++;
 			}
 			i++; j++;
-			if (R_parentheses != 0 && R_parentheses == L_parentheses){
+			if (R_parentheses != 0 &&
+				R_parentheses == L_parentheses) {
 				break;
 			}
 		}
-		if (formula[0] == '\0'){
+		if (formula[0] == '\0') {
 			break;
 		}
 		formula[j] = '\0';
-		if (R_parentheses == L_parentheses){
+		if (R_parentheses == L_parentheses) {
 			quit = execute(formula);
 		}
-		else{
-			printf("'%s' is not correct\n",formula);
+		else {
+			printf("'%s' is not correct\n\n",formula);
 		}
 	}
+	free(input);
 	return quit;
 }
 
 int execute(char *formula)
 {
+	printf("formula = %s\n",formula);
 	int quit = 0;
 	char **token;
 	token = split(formula);
 	cons_t *tree;
 	tree = make_tree(token);
-	if(tree != NULL){
-		if (tree->type == SYMBOL){
-			if (tree->ivalue == QUIT){
+	if(tree != NULL) {
+		if (tree->type == SYMBOL) {
+			if (tree->ivalue == QUIT) {
 				quit = 1;
 			}
 		}
@@ -109,7 +106,6 @@ int execute(char *formula)
 	discriminate(tree);
 	free_tree(tree);
 	free_token(token);
-	printf("\n");
 	return quit;
 }
 
