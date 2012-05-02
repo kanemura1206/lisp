@@ -128,10 +128,10 @@ int caladd(cons_t *work)
 int calsub(cons_t *work) //todo
 {
 	if (work->cdr != NULL) {
-		return branch(work) - calsub(work->cdr);
+		return branch(work) + calsub(work->cdr);
 	}
 	else {
-		return branch(work);
+		return -branch(work);
 	}
 }
 

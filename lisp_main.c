@@ -90,7 +90,6 @@ int cut(char *input)
 
 int execute(char *formula)
 {
-	printf("formula = %s\n",formula);
 	int quit = 0;
 	char **token;
 	token = split(formula);
