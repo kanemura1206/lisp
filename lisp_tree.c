@@ -99,56 +99,21 @@ void free_tree(cons_t *work)
 
 void distribute_cha(cons_t *work,char **token,int i)
 {
-	if (strcmp(token[i],"+") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = PLUS;
+	switch (token[i]) {
+		case "+" : work->ivalue = PLUS; work->type = SYMBOL; break;
+		case "-" : work->ivalue = MINUS; work->type = SYMBOL; break;
+		case "*" : work->ivalue = ASTERISK; work->type = SYMBOL; break;
+		case "/" : work->ivalue = SLASH; work->type = SYMBOL; break;
+		case "if" : work->ivalue = IF; work->type = SYMBOL; break;
+		case "<" : work->ivalue = LESS_THAN_SIGN; work->type = SYMBOL; break;
+		case "<=" : work->ivalue = LESS_THAN_OR_EQUAL_TO; work->type = SYMBOL; break;
+		case ">" : work->ivalue = GREATER_THAN_SIGN; work->type = SYMBOL; break;
+		case ">=" : work->ivalue = GREATER_OR_EQUAL_TO; work->type = SYMBOL; break;
+		case "setq" : work->ivalue = SETQ; work->type = SYMBOL; break;
+		case "defun" : work->ivalue = DEFUN; work->type = SYMBOL; break;
+		case "quit" : work->ivalue = QUIT; work->type = SYMBOL; break;
 	}
-	else if (strcmp(token[i],"-") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = MINUS;
-	}
-	else if (strcmp(token[i],"*") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = ASTERISK;
-	}
-	else if (strcmp(token[i],"/") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = SLASH;
-	}
-	else if (strcmp(token[i],"if") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = IF;
-	}
-	else if (strcmp(token[i],"<") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = LESS_THAN_SIGN;
-	}
-	else if (strcmp(token[i],"<=") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = LESS_THAN_OR_EQUAL_TO;
-	}
-	else if (strcmp(token[i],">") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = GREATER_THAN_SIGN;
-	}
-	else if (strcmp(token[i],">=") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = GREATER_THAN_EQUAL_TO;
-	}
-	else if (strcmp(token[i],"setq") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = SETQ;
-	}
-	else if (strcmp(token[i],"defun") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = DEFUN;
-	}
-	else if (strcmp(token[i],"quit") == 0 ||
-			 strcmp(token[i],"q") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = QUIT;
-	}
-	else {
+	if (work->type != SYMBOL) {
 		work->type = CHA;
 		int slen = strlen(token[i]);
 		work->svalue = calloc(slen+1,sizeof(char));
