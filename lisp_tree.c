@@ -94,53 +94,40 @@ void free_tree(cons_t *work)
 
 void distribute_cha(cons_t *work,char *str)
 {
-	if (strcmp(str,"+") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = PLUS;
+	work->type = SYMBOL;
+	switch (str[0]) {
+	case ('+') : work->ivalue = PLUS; return;
+	case ('-') : work->ivalue = MINUS; return;
+	case ('*') : work->ivalue = ASTERISK; return;
+	case ('/') : work->ivalue = SLASH; return;
+	case ('<') :
+		if (str[1] == '=') {
+			work->ivalue = LESS_THAN_OR_EQUAL_TO;
+		}
+		else {
+			work->ivalue = LESS_THAN_SIGN;
+		}
+		return;
+	case ('>') :
+		if (str[1] == '=') {
+			work->ivalue = GREATER_THAN_EQUAL_TO;
+		}
+		else {
+			work->ivalue = GREATER_THAN_SIGN;
+		}
+		return;
 	}
-	else if (strcmp(str,"-") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = MINUS;
-	}
-	else if (strcmp(str,"*") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = ASTERISK;
-	}
-	else if (strcmp(str,"/") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = SLASH;
-	}
-	else if (strcmp(str,"if") == 0) {
-		work->type = SYMBOL;
+	if (strcmp(str,"if") == 0) {
 		work->ivalue = IF;
 	}
-	else if (strcmp(str,"<") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = LESS_THAN_SIGN;
-	}
-	else if (strcmp(str,"<=") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = LESS_THAN_OR_EQUAL_TO;
-	}
-	else if (strcmp(str,">") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = GREATER_THAN_SIGN;
-	}
-	else if (strcmp(str,">=") == 0) {
-		work->type = SYMBOL;
-		work->ivalue = GREATER_THAN_EQUAL_TO;
-	}
 	else if (strcmp(str,"setq") == 0) {
-		work->type = SYMBOL;
 		work->ivalue = SETQ;
 	}
 	else if (strcmp(str,"defun") == 0) {
-		work->type = SYMBOL;
 		work->ivalue = DEFUN;
 	}
 	else if (strcmp(str,"quit") == 0 ||
 			 strcmp(str,"q") == 0) {
-		work->type = SYMBOL;
 		work->ivalue = QUIT;
 	}
 	else {
