@@ -13,18 +13,17 @@ cons_t* make_tree(char** token)
 		return NULL;
 	}
 	cons_t *work = (cons_t*)calloc(1,sizeof(cons_t));
-	int i = 0;
-	int j = 1;
+	int i = 0, j = 1;
 	cons_t *start;
 	start = work;
 	cons_t **memory = (cons_t**)calloc(MEMORY_SIZE,sizeof(cons_t*));
 	memory[0] = start;
 
-	if (strcmp(token[0],"(") == 0) {
+	if (token[0][0] == '(') {
 		i = 1;
 	}
 	while (token[i] != NULL) {
-		if (strcmp(token[i],"(") == 0) {
+		if (token[i][0] == '(') {
 			work->type = CAR;
 			memory[j] = work;
 			cons_t *new = (cons_t*)calloc(1,sizeof(cons_t));
@@ -33,31 +32,27 @@ cons_t* make_tree(char** token)
 			i++; j++;
 		}
 		else {
-			if (format(token[i]) == NUM) {
-				work->type = NUM;
-				work->ivalue = atoi(token[i]); //strtol
+			if (token[i][0] == ')') {
+				i++; j--;
+				work->cdr = NULL;
+				work = memory[j];
+			}
+			else {
+				if (format(token[i]) == NUM) {
+					work->type = NUM;
+					work->ivalue = atoi(token[i]);
+				}
+				else {
+					distribute_cha(work,token[i]);
+				}
 				i++;
 			}
-			else if ( (format(token[i]) == CHA) &&
-					  (strcmp(token[i],")") != 0) ) {
-				distribute_cha(work,token[i]);
-				i++;
+			if (token[i] != NULL && token[i][0] != ')') {
+				cons_t *next = (cons_t*)calloc(1,sizeof(cons_t));
+				work->cdr = next;
+				work = next;
 			}
-			if (token[i] != NULL) {
-				if (strcmp(token[i],")") == 0) {
-					i++; j--;
-					work->cdr = NULL;
-					work = memory[j];
-				}
-			}
-			if (token[i] != NULL) {
-				if (strcmp(token[i],")") != 0) {
-					cons_t *next = (cons_t*)calloc(1,sizeof(cons_t));
-					work->cdr = next;
-					work = next;
-				}
-			}
-		}	
+		}
 	}
 	free(memory);
 	return start;
