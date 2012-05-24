@@ -99,22 +99,23 @@ void free_tree(cons_t *work)
 
 void distribute_cha(cons_t *work,char **token,int i)
 {
+	work->type = SYMBOL;
 	switch (token[i]) {
-		case "+" : work->ivalue = PLUS; work->type = SYMBOL; break;
-		case "-" : work->ivalue = MINUS; work->type = SYMBOL; break;
-		case "*" : work->ivalue = ASTERISK; work->type = SYMBOL; break;
-		case "/" : work->ivalue = SLASH; work->type = SYMBOL; break;
-		case "if" : work->ivalue = IF; work->type = SYMBOL; break;
-		case "<" : work->ivalue = LESS_THAN_SIGN; work->type = SYMBOL; break;
-		case "<=" : work->ivalue = LESS_THAN_OR_EQUAL_TO; work->type = SYMBOL; break;
-		case ">" : work->ivalue = GREATER_THAN_SIGN; work->type = SYMBOL; break;
-		case ">=" : work->ivalue = GREATER_OR_EQUAL_TO; work->type = SYMBOL; break;
-		case "setq" : work->ivalue = SETQ; work->type = SYMBOL; break;
-		case "defun" : work->ivalue = DEFUN; work->type = SYMBOL; break;
-		case "quit" : work->ivalue = QUIT; work->type = SYMBOL; break;
+		case "+" : work->ivalue = PLUS; break;
+		case "-" : work->ivalue = MINUS; break;
+		case "*" : work->ivalue = ASTERISK; break;
+		case "/" : work->ivalue = SLASH; break;
+		case "if" : work->ivalue = IF; break;
+		case "<" : work->ivalue = LESS_THAN_SIGN; break;
+		case "<=" : work->ivalue = LESS_THAN_OR_EQUAL_TO; break;
+		case ">" : work->ivalue = GREATER_THAN_SIGN; break;
+		case ">=" : work->ivalue = GREATER_OR_EQUAL_TO; break;
+		case "setq" : work->ivalue = SETQ; break;
+		case "defun" : work->ivalue = DEFUN; break;
+		case "quit" : work->ivalue = QUIT; break;
+		default : work->type = CHA;
 	}
-	if (work->type != SYMBOL) {
-		work->type = CHA;
+	if (work->type == CHA) {
 		int slen = strlen(token[i]);
 		work->svalue = calloc(slen+1,sizeof(char));
 		strcpy(work->svalue,token[i]);
