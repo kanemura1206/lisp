@@ -99,23 +99,57 @@ void free_tree(cons_t *work)
 
 void distribute_cha(cons_t *work,char **token,int i)
 {
-	work->type = SYMBOL;
-	switch (token[i]) {
-		case "+" : work->ivalue = PLUS; break;
-		case "-" : work->ivalue = MINUS; break;
-		case "*" : work->ivalue = ASTERISK; break;
-		case "/" : work->ivalue = SLASH; break;
-		case "if" : work->ivalue = IF; break;
-		case "<" : work->ivalue = LESS_THAN_SIGN; break;
-		case "<=" : work->ivalue = LESS_THAN_OR_EQUAL_TO; break;
-		case ">" : work->ivalue = GREATER_THAN_SIGN; break;
-		case ">=" : work->ivalue = GREATER_OR_EQUAL_TO; break;
-		case "setq" : work->ivalue = SETQ; break;
-		case "defun" : work->ivalue = DEFUN; break;
-		case "quit" : work->ivalue = QUIT; break;
-		default : work->type = CHA;
+	if (strcmp(token[i],"+") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = PLUS;
 	}
-	if (work->type == CHA) {
+	else if (strcmp(token[i],"-") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = MINUS;
+	}
+	else if (strcmp(token[i],"*") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = ASTERISK;
+	}
+	else if (strcmp(token[i],"/") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = SLASH;
+	}
+	else if (strcmp(token[i],"if") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = IF;
+	}
+	else if (strcmp(token[i],"<") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = LESS_THAN_SIGN;
+	}
+	else if (strcmp(token[i],"<=") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = LESS_THAN_OR_EQUAL_TO;
+	}
+	else if (strcmp(token[i],">") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = GREATER_THAN_SIGN;
+	}
+	else if (strcmp(token[i],">=") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = GREATER_THAN_EQUAL_TO;
+	}
+	else if (strcmp(token[i],"setq") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = SETQ;
+	}
+	else if (strcmp(token[i],"defun") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = DEFUN;
+	}
+	else if (strcmp(token[i],"quit") == 0 ||
+			 strcmp(token[i],"q") == 0) {
+		work->type = SYMBOL;
+		work->ivalue = QUIT;
+	}
+	else {
+		work->type = CHA;
 		int slen = strlen(token[i]);
 		work->svalue = calloc(slen+1,sizeof(char));
 		strcpy(work->svalue,token[i]);
