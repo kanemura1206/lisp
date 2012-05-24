@@ -5,7 +5,7 @@
 //todo static
 int format(char *c);
 void free_tree(cons_t *work);
-void distribute_cha(cons_t *work,char **token,int i);
+void distribute_cha(cons_t *work,char *str);
 
 cons_t* make_tree(char** token)
 {
@@ -40,7 +40,7 @@ cons_t* make_tree(char** token)
 			}
 			else if ( (format(token[i]) == CHA) &&
 					  (strcmp(token[i],")") != 0) ) {
-				distribute_cha(work,token,i);
+				distribute_cha(work,token[i]);
 				i++;
 			}
 			if (token[i] != NULL) {
@@ -97,61 +97,61 @@ void free_tree(cons_t *work)
 	work = NULL;
 }
 
-void distribute_cha(cons_t *work,char **token,int i)
+void distribute_cha(cons_t *work,char *str)
 {
-	if (strcmp(token[i],"+") == 0) {
+	if (strcmp(str,"+") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = PLUS;
 	}
-	else if (strcmp(token[i],"-") == 0) {
+	else if (strcmp(str,"-") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = MINUS;
 	}
-	else if (strcmp(token[i],"*") == 0) {
+	else if (strcmp(str,"*") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = ASTERISK;
 	}
-	else if (strcmp(token[i],"/") == 0) {
+	else if (strcmp(str,"/") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = SLASH;
 	}
-	else if (strcmp(token[i],"if") == 0) {
+	else if (strcmp(str,"if") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = IF;
 	}
-	else if (strcmp(token[i],"<") == 0) {
+	else if (strcmp(str,"<") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = LESS_THAN_SIGN;
 	}
-	else if (strcmp(token[i],"<=") == 0) {
+	else if (strcmp(str,"<=") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = LESS_THAN_OR_EQUAL_TO;
 	}
-	else if (strcmp(token[i],">") == 0) {
+	else if (strcmp(str,">") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = GREATER_THAN_SIGN;
 	}
-	else if (strcmp(token[i],">=") == 0) {
+	else if (strcmp(str,">=") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = GREATER_THAN_EQUAL_TO;
 	}
-	else if (strcmp(token[i],"setq") == 0) {
+	else if (strcmp(str,"setq") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = SETQ;
 	}
-	else if (strcmp(token[i],"defun") == 0) {
+	else if (strcmp(str,"defun") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = DEFUN;
 	}
-	else if (strcmp(token[i],"quit") == 0 ||
-			 strcmp(token[i],"q") == 0) {
+	else if (strcmp(str,"quit") == 0 ||
+			 strcmp(str,"q") == 0) {
 		work->type = SYMBOL;
 		work->ivalue = QUIT;
 	}
 	else {
 		work->type = CHA;
-		int slen = strlen(token[i]);
+		int slen = strlen(str);
 		work->svalue = calloc(slen+1,sizeof(char));
-		strcpy(work->svalue,token[i]);
+		strcpy(work->svalue,str);
 	}
 }
